@@ -795,6 +795,17 @@ function draw() { // This draw is for p5.js animations of roboto/sfpro letters
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize TokenManager
+    const tokenManager = new TokenManager();
+    tokenManager.addSettingsButton();
+
+    // Get DOM elements
+    userNameInput = document.getElementById('userNameInput');
+    sentenceInput = document.getElementById('sentenceInput');
+    analyzeSentenceBtn = document.getElementById('analyzeSentenceBtn');
+    analyzedMessageOutput = document.getElementById('analyzedMessageOutput');
+    loadingIndicator = document.getElementById('loadingIndicator');
+
     // Set initial title colors based on dark mode
     setInitialTitleColors();
     

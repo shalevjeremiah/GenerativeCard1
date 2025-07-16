@@ -8,13 +8,11 @@ class WebGLDisplacementEffect {
         this.gl = canvas.getContext('webgl', { preserveDrawingBuffer: true }) ||
                    canvas.getContext('experimental-webgl', { preserveDrawingBuffer: true });
         if (!this.gl) {
-            console.error('WebGL not supported');
             return;
         }
         
-        console.log('WebGL displacement effect initializing...');
-        this.init().catch(error => {
-            console.error('Failed to initialize WebGL displacement:', error);
+        this.init().catch(() => {
+            this.createProceduralDisplacement();
         });
     }
     
@@ -62,13 +60,10 @@ class WebGLDisplacementEffect {
         `;
         
         // Create shaders
-        console.log('🔧 Creating WebGL shader program...');
         this.program = this.createProgram(vertexShaderSource, fragmentShaderSource);
         if (!this.program) {
-            console.error('❌ Failed to create shader program');
             return;
         }
-        console.log('✅ Shader program created successfully');
         
         // Get attribute and uniform locations
         this.positionLocation = gl.getAttribLocation(this.program, 'a_position');
@@ -89,17 +84,9 @@ class WebGLDisplacementEffect {
         try {
             await this.loadDisplacementImage();
             this.initialized = true;
-            console.log('✅ WebGL displacement effect initialized successfully');
         } catch (error) {
-            if (window.location.protocol === 'file:') {
-                console.log('📁 File protocol detected - using enhanced procedural glass displacement');
-                console.log('💡 For real Glass.png texture, serve files via HTTP server (e.g., localhost:8000)');
-            } else {
-                console.error('❌ Failed to load Glass.png, creating procedural displacement as fallback:', error);
-            }
             this.createProceduralDisplacement();
             this.initialized = true;
-            console.log('✅ WebGL displacement effect initialized with high-quality procedural glass');
         }
     }
     
@@ -110,7 +97,6 @@ class WebGLDisplacementEffect {
         gl.compileShader(shader);
         
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            console.error('Shader compilation error:', gl.getShaderInfoLog(shader));
             gl.deleteShader(shader);
             return null;
         }
@@ -133,7 +119,6 @@ class WebGLDisplacementEffect {
         gl.linkProgram(program);
         
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.error('Program linking error:', gl.getProgramInfoLog(program));
             gl.deleteProgram(program);
             return null;
         }
@@ -187,7 +172,6 @@ class WebGLDisplacementEffect {
     async loadDisplacementImage() {
         // Check if we're running on file:// protocol
         if (window.location.protocol === 'file:') {
-            console.log('🚨 File protocol detected - WebGL cannot load external images from file://, using enhanced procedural displacement');
             throw new Error('File protocol detected - using procedural displacement');
         }
         
@@ -196,22 +180,17 @@ class WebGLDisplacementEffect {
             image.crossOrigin = 'anonymous';
             
             image.onload = () => {
-                console.log('✅ Displacement image loaded successfully:', image.width, 'x', image.height);
                 try {
                     const gl = this.gl;
                     gl.bindTexture(gl.TEXTURE_2D, this.displacementTexture);
                     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-                    console.log('✅ Displacement texture uploaded to GPU');
                     resolve();
                 } catch (error) {
-                    console.error('❌ Failed to upload displacement texture:', error);
                     reject(error);
                 }
             };
             
             image.onerror = (error) => {
-                console.error('❌ Failed to load displacement image from:', this.displacementImageUrl);
-                console.error('❌ Image error details:', error);
                 reject(new Error('Image load failed: ' + this.displacementImageUrl));
             };
             
@@ -220,7 +199,6 @@ class WebGLDisplacementEffect {
     }
     
     createProceduralDisplacement() {
-        console.log('🔧 Creating enhanced procedural glass displacement map...');
         const gl = this.gl;
         const width = 512;  // Higher resolution for better quality
         const height = 512;
@@ -282,13 +260,10 @@ class WebGLDisplacementEffect {
         gl.bindTexture(gl.TEXTURE_2D, this.displacementTexture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
         
-        console.log('✅ Enhanced procedural glass displacement map created:', width, 'x', height);
-        console.log('📊 Glass effect quality: High-resolution with realistic patterns');
     }
     
     apply(sourceCanvas, displacementScale = 15) {
         if (!this.initialized) {
-            console.log('WebGL displacement not initialized yet');
             return;
         }
         
@@ -307,7 +282,6 @@ class WebGLDisplacementEffect {
         if (hasBlur && blurAmount !== '0px') {
             // Apply the same blur to our temporary canvas
             tempCtx.filter = `blur(${blurAmount})`;
-            console.log('Applying blur to displacement source:', blurAmount);
         }
         
         // Draw the source canvas (with or without blur) to our temp canvas
@@ -354,13 +328,11 @@ class WebGLDisplacementEffect {
         // Draw
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         
-        console.log('WebGL displacement applied with scale:', displacementScale);
     }
     
     // New method to use a canvas as the displacement map
     applyCanvasAsDisplacement(sourceCanvas, displacementCanvas, displacementScale = 15) {
         if (!this.initialized) {
-            console.log('WebGL displacement not initialized yet');
             return;
         }
         

@@ -1,8 +1,5 @@
-console.log('Art Generator script loaded');
-
 class ArtGenerator {
     constructor(canvas) {
-        console.log('Initializing ArtGenerator');
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         
@@ -67,13 +64,9 @@ class ArtGenerator {
         this.nameLength = 8;
         
         // Initialize WebGL displacement effect using Glass.png
-        console.log('Initializing WebGL displacement effect...');
         const displacementCanvas = document.getElementById('displacementCanvas');
         if (displacementCanvas) {
             this.webglDisplacement = new WebGLDisplacementEffect(displacementCanvas, 'Assets/Glass.png');
-            console.log('WebGL displacement effect created');
-        } else {
-            console.error('Displacement canvas not found');
         }
         
         // Initialize SimplexNoise for procedural generation
@@ -155,14 +148,11 @@ class ArtGenerator {
         
         // Bind animation method
         this.animate = this.animate.bind(this);
-        
-        console.log('ArtGenerator initialized');
     }
 
     removeExistingGlassOverlays() {
         // Remove any existing glass effect DOM elements
         const parent = this.canvas.parentElement;
-        console.log('Checking for existing glass overlays in parent:', parent);
         
         // Remove all divs that might be glass overlays
         const allDivs = parent.querySelectorAll('div');
@@ -170,18 +160,13 @@ class ArtGenerator {
         allDivs.forEach(div => {
             const style = div.style;
             if (style.position === 'absolute' && (style.zIndex || style.mixBlendMode)) {
-                console.log('Removing glass overlay div:', div);
                 div.remove();
                 removedCount++;
             }
         });
-        
-        console.log('Removed', removedCount, 'glass overlay elements');
     }
 
     generateArt(params) {
-        console.log('Generating art with params:', params);
-        
         // Update parameters
         this.recordingLength = params.recordingLength || 3;
         this.wordCount = params.wordCount || 20;
@@ -194,11 +179,9 @@ class ArtGenerator {
         
         // Initialize new particles
         this.initializeParticles();
-        console.log('Particles initialized:', this.particles.length);
         
         // Start animation if not running
         if (!this.animationRunning) {
-            console.log('Starting animation');
             this.animationRunning = true;
             requestAnimationFrame(this.animate);
         }
@@ -412,8 +395,6 @@ class ArtGenerator {
         
         // Calculate total particle count based primarily on message length
         const particleCount = Math.min(150, baseParticleCount + messageBasedParticles); // Cap at 150 particles
-        
-        console.log(`Creating particles: ${particleCount} (base: ${baseParticleCount}, messageLength: ${this.wordCount} words -> +${messageBasedParticles} particles)`);
         
         for (let i = 0; i < particleCount; i++) {
             this.particles.push(this.createParticle());
@@ -785,7 +766,6 @@ class ArtGenerator {
         
         if (!this.lastTime) {
             this.lastTime = currentTime;
-            console.log('Animation started');
         }
         
         // Calculate delta time
@@ -898,15 +878,11 @@ class ArtGenerator {
             return;
         }
         
-        console.log('Generating procedural noise overlay');
-        
         // Clear the overlay canvas
         this.noiseOverlayCtx.clearRect(0, 0, this.noiseOverlayCanvas.width, this.noiseOverlayCanvas.height);
         
         // Generate high-quality film grain noise
         this.generateFilmGrainNoise();
-        
-        console.log('Procedural noise texture applied to overlay canvas');
     }
 
     generateFilmGrainNoise() {
@@ -1017,13 +993,11 @@ class ArtGenerator {
             this.animationRunning = true;
             this.initializeParticles();
             requestAnimationFrame(this.animate);
-            console.log('Art generation started');
         }
     }
 
     stop() {
         this.animationRunning = false;
-        console.log('Art generation stopped');
     }
 
     setParameters(params) {
@@ -1040,8 +1014,6 @@ class ArtGenerator {
             disgust: 0,
             love: 0
         };
-        
-        console.log('Parameters updated:', params);
     }
 }
 
