@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome Equalizer Visualizer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0a0a0a;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .equalizer-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .equalizer-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .canvas-container {
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+        
+        canvas {
+            display: block;
+            width: 468.48px;
+            height: 216.96px;
+            cursor: crosshair;
+            transition: cursor 0.2s ease;
+        }
+        
+        canvas:hover {
+            cursor: pointer;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #ffffff, #c0c0c0);
+            color: black;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+        
+        button:hover {
+            background: linear-gradient(45deg, #f0f0f0, #a0a0a0);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .info {
+            text-align: center;
+            color: #ccc;
+            font-size: 16px;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+        
+        .recording-status {
+            text-align: center;
+            color: #00ff88;
+            font-size: 14px;
+            margin: 10px 0;
+            min-height: 20px;
+            font-weight: bold;
+        }
+        
+        .record-btn {
+            background: linear-gradient(45deg, #ff4444, #cc2222) !important;
+        }
+        
+        .record-btn:hover {
+            background: linear-gradient(45deg, #ff6666, #dd3333) !important;
+        }
+        
+        .play-btn {
+            background: linear-gradient(45deg, #44ff44, #22cc22) !important;
+        }
+        
+        .play-btn:hover {
+            background: linear-gradient(45deg, #66ff66, #33dd33) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #ffffff; margin-bottom: 10px; text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);">🎵 Chrome Equalizer Visualizer</h1>
+        <div class="info">
+            Canvas Dimensions: 468.48 × 216.96 pixels<br>
+            4 synchronized equalizers (2×2 grid) | 15 bars each | Right side mirrored | No gaps<br>
+            Sharp chrome gradient | <strong>🎤 Record live audio and play it back in loop!</strong><br>
+            <strong>🖱️ Hover over bars for cool expansion effect!</strong>
+        </div>
+        
+        <!-- Chrome Equalizer -->
+        <div class="equalizer-section">
+            <div class="equalizer-title">Chrome Edition</div>
+            <div class="canvas-container">
+                <canvas id="chromeEq" width="468.48" height="216.96"></canvas>
+            </div>
+            <div id="recordingStatus" class="recording-status"></div>
+            <div class="controls">
+                <button onclick="startEqualizer()">▶️ Start Simulation</button>
+                <button onclick="stopEqualizer()">⏹️ Stop</button>
+                <button onclick="randomize()">🎲 Randomize</button>
+                <button onclick="toggleEqualizerMode()" id="modeToggle">📱 Single Mode</button>
+            </div>
+            <div class="controls">
+                <button onclick="startRecording()" class="record-btn">🎤 Record Live</button>
+                <button onclick="stopRecording()">⏹️ Stop Recording</button>
+                <button onclick="playRecording()" class="play-btn">🔄 Play Loop</button>
+                <button onclick="stopPlayback()">⏹️ Stop Loop</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="chrome_equalizer.js"></script>
+</body>
+</html> 

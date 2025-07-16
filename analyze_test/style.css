@@ -1,0 +1,842 @@
+/* styles.css */
+
+/* reset and base */
+:root {
+    --blur-amount: 10px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@font-face {
+    font-family: 'SF-Pro';
+    src: url('Assets/SF-Pro.ttf') format('truetype-variations');
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0; /* Fallback color */
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Main background blur effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #f0f0f0; /* Fallback color */
+    background-size: 100vw auto; /* Scale to viewport width */
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(100px); /* Increased blur */
+    z-index: -1;
+    transform: scale(1.5); /* Scale up to ensure full coverage */
+}
+
+.card {
+    width: 404.8px;
+    min-height: 384px;
+    height: auto;
+    background: white;
+    backdrop-filter: blur(5px);
+    border-radius: 10px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.sliding-content {
+    position: relative;
+    background: white;
+    z-index: 3;
+    flex-grow: 1;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* First layout */
+.layout-image {
+    padding: 7.2px;
+    padding-bottom: 0;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 4;
+    background: white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    flex-shrink: 0;
+}
+
+.image-container {
+    position: relative;
+    width: 390.4px;
+    height: 180.8px;
+    line-height: 0;
+    font-size: 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.main-image {
+    width: 390.4px;
+    height: 180.8px;
+    object-fit: cover;
+    margin: 0;
+    position: absolute;
+    top: 7.2px;
+    left: 7.2px;
+    z-index: 1;
+    background-color: white;
+    filter: blur(20px);
+    background-image: var(--generated-art-url);
+    background-size: cover;
+    background-position: center;
+    text-indent: -9999px;
+    border-radius: 12px;
+}
+
+.main-image-sharp {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    background-color: white;
+    background-image: var(--generated-art-url);
+    background-size: cover;
+    background-position: center;
+    text-indent: -9999px;
+}
+
+/* Layout image blur effect */
+.layout-image::before {
+    display: none;
+}
+
+/* Second Layout - Info Top */
+.layout-info-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    margin: 0 0 15px 0;
+    position: relative;
+    z-index: 3;
+    background: white;
+}
+
+.info-left {
+    display: flex;
+    gap: 40px;  /* Increased from 9.6px */
+}
+
+.text-box h3 {
+    font-size: 6px;  /* 30px / 5 */
+    color: #000000;
+    opacity: 0.5;  /* Explicitly set 50% opacity */
+    margin-bottom: 1.6px;  /* 8px / 5 */
+    font-weight: 500;  /* normal weight */
+    text-transform: uppercase;  /* Make text uppercase */
+}
+
+.text-box p {
+    font-size: 9px;  /* 45px / 5 */
+    color: rgb(0, 0, 0);  /* 100% black */
+    font-weight: 500;  /* semi-bold */
+}
+
+.waves-image {
+    height: 20px;  /* 100px / 5 */
+    object-fit: contain;
+    margin-top: 4px;  /* Add space to move it down */
+}
+
+/* Third Layout - Main Text */
+.layout-main-text {
+    padding: 0;
+    text-align: left;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0 0 15px 0;
+    position: relative;
+    z-index: 2;
+    background: white;
+}
+
+#messageInput {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 15px;
+}
+
+.message {
+    font-family: 'SF-Pro', sans-serif;
+    font-size: 32px;
+    line-height: 1.5;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    position: relative;
+    color: black;
+}
+
+.char {
+    display: inline-block;
+    transition: transform 0.2s ease;
+    transform: scale(var(--scale, 1));
+    transform-origin: center;
+    position: relative;
+}
+
+.line {
+    position: relative;
+}
+
+.word {
+    display: inline-block;
+    position: relative;
+}
+
+.line {
+    white-space: nowrap;
+    display: block;
+    width: fit-content;  /* Changed from 100% to fit-content */
+    overflow: visible;   /* Changed from hidden to visible */
+}
+
+.line + .line {
+    margin-top: -12px;  /* Reduced from -15px */
+}
+
+/* Individual word styles */
+.word-space {
+    margin-right: 2px;  /* Reduced from 4px */
+}
+
+.word-space-extended {
+    margin-right: 2px;  /* Already at 2px */
+}
+
+.word-before-extended {
+    margin-right: 2px;  /* Reduced from 4px */
+}
+
+/* Font variation settings */
+.word-normal {
+    font-variation-settings: 'wght' 300, 'wdth' 100;
+}
+
+.word-normal.condensed {
+    font-variation-settings: 'wght' 200, 'wdth' 75;
+}
+
+.word-you {
+    font-variation-settings: 'wght' 500, 'wdth' 100;
+}
+
+.word-say {
+    font-variation-settings: 'wght' 300, 'wdth' 150;
+}
+
+.word-look {
+    font-variation-settings: 'wght' 300, 'wdth' 100;
+}
+
+.word-amazing {
+    display: inline-flex;
+}
+
+.word-amazing span {
+    display: inline-block;
+}
+
+/* Fourth layout */
+.layout-info-bottom {
+    background: white;
+    z-index: 2;
+    margin: auto 0 0 0;  /* This pushes it to the bottom */
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    user-select: none;
+}
+
+.layout-info-bottom:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Hide the arrow since we're using the whole bottom section */
+.arrow-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+.arrow {
+    position: relative;
+    width: 35px;
+    height: 21px;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+}
+
+.arrow::before,
+.arrow::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 1.4px;
+    height: 24.5px;
+    background-color: rgba(0, 0, 0, 0.20);
+}
+
+.arrow::before {
+    left: 50%;
+    transform: rotate(-60deg);
+    transform-origin: top center;
+}
+
+.arrow::after {
+    left: 50%;
+    transform: rotate(60deg);
+    transform-origin: top center;
+}
+
+/* Remove the old arrow image styles */
+.arrow-container img {
+    display: none;
+}
+
+.test-controls {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    width: auto;
+    min-width: 320px;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.test-controls input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    flex: 1;
+}
+
+.test-controls input:focus {
+    border-color: #3498db;
+}
+
+/* Voice recording styles */
+.record-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.record-button:hover {
+    background-color: #e0e0e0;
+}
+
+.record-button.recording {
+    background-color: #ff4444;
+    animation: pulse 1.5s infinite;
+}
+
+.record-button i {
+    font-size: 16px;
+    color: #333;
+}
+
+.record-button.recording i {
+    color: white;
+}
+
+.recording-status {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    min-height: 20px;
+    transition: color 0.3s ease;
+}
+
+.recording-status.warning {
+    color: #ff4444;
+}
+
+#analyzeSentenceBtn {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+#analyzeSentenceBtn:hover {
+    background-color: #2980b9;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7);
+    }
+    70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(255, 68, 68, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 68, 68, 0);
+    }
+}
+
+/* Minimized state */
+.card.minimized {
+    min-height: auto;
+    height: auto;
+}
+
+.card.minimized .sliding-content {
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+}
+
+.card.minimized .layout-info-top,
+.card.minimized .layout-main-text {
+    display: none;
+}
+
+/* Keep Layout 1 and 4 visible */
+.card.minimized .layout-image,
+.card.minimized .layout-info-bottom {
+    opacity: 1;
+}
+
+/* Layout 4 should stick to Layout 1 when minimized */
+.card.minimized .layout-info-bottom {
+    margin-top: 0;
+}
+
+/* Arrow rotation */
+.card.minimized .arrow {
+    transform: rotate(180deg);
+}
+
+/* === Added for text_test integration === */
+
+/* Input Layout Styles */
+.input-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 20px; /* Adjusted padding */
+  gap: 10px;
+  width: calc(100% - 40px); /* Match padding of other layouts */
+  margin: 0 auto; /* Center it if it's not full width of card */
+}
+
+.input-layout .input-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.input-layout input[type="text"] {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  font-size: 16px; /* Adjust as needed */
+  font-family: 'SF-Pro', sans-serif;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #000;
+}
+
+.input-layout input[type="text"]::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.input-layout button#analyzeSentenceBtn {
+  padding: 10px 20px;
+  font-size: 16px; /* Adjust as needed */
+  font-family: 'SF-Pro', sans-serif;
+  font-weight: 600;
+  border: none;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.input-layout button#analyzeSentenceBtn:hover {
+  background-color: rgba(0, 0, 0, 1);
+}
+
+/* Styles for analyzed text output, ensuring it fits Layout 3 style */
+#analyzedMessageOutput {
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1.0; /* Increased from 0.9 for slightly more line spacing */
+    padding: 0 20px;
+    color: #000 !important;
+    text-align: left;
+    width: 100%;
+}
+
+/* New class for the outer wrapper span that handles flow */
+#analyzedMessageOutput .word-flow-wrapper {
+    display: inline-block;
+    vertical-align: baseline;
+    margin-right: 4px;
+    margin-bottom: 0; /* Removed margin between lines */
+}
+
+#analyzedMessageOutput .wordSpan {
+    display: inline-block !important;
+    vertical-align: baseline;
+    padding: 0 1px;
+    margin-right: 3px;
+    margin-bottom: 0px;
+}
+
+/* Copied and adapted from text_test/style.css */
+.wordSpan {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    margin: 0 2px;
+    border-radius: 4px;
+    cursor: default;
+    vertical-align: baseline;
+}
+
+#analyzedMessageOutput .sentence {
+    line-height: 0.4;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+}
+
+.wordSpan span.animated {
+    display: inline-block;
+    position: relative;
+    transform-origin: center;
+    will-change: transform, font-variation-settings, opacity;
+    text-align: center;
+}
+
+/* Emotion-specific animations (Copied from text_test/style.css) */
+@keyframes joy {
+    0%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; opacity: 1; }
+    50% { font-variation-settings: 'wght' 500, 'wdth' 140; opacity: 1; }
+}
+
+@keyframes sadness {
+    0%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; opacity: 1; }
+    50% { font-variation-settings: 'wght' 300, 'wdth' 60; opacity: 1; }
+}
+
+@keyframes anger {
+    0%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; transform: rotate(0deg) scale(1) translate(0, 0) skewX(0deg); opacity: 1; }
+    40% { font-variation-settings: 'wght' 800, 'wdth' 140; transform: rotate(3deg) scale(1.03) translate(2.4px, -1.9px) skewX(-3deg); opacity: 1; }
+    55% { font-variation-settings: 'wght' 450, 'wdth' 95; transform: rotate(-2deg) scale(0.98) translate(-1.4px, 1.4px) skewX(1.5deg); opacity: 1; }
+    75% { font-variation-settings: 'wght' 430, 'wdth' 100; transform: rotate(0.6deg) scale(1.0) translate(0.7px, -0.7px) skewX(-0.5deg); opacity: 1; }
+}
+
+@keyframes fear {
+    0%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; transform: translate(0,0) rotate(0deg); opacity: 1; }
+    15% { font-variation-settings: 'wght' 340, 'wdth' 80; transform: translate(0.8px, -0.7px) rotate(0.5deg); opacity: 0.95; }
+    30% { font-variation-settings: 'wght' 420, 'wdth' 115; transform: translate(-0.7px, 0.7px) rotate(-0.6deg); opacity: 0.92; }
+    45% { font-variation-settings: 'wght' 350, 'wdth' 75; transform: translate(0.6px, -0.6px) rotate(0.4deg); opacity: 0.9; }
+    60% { font-variation-settings: 'wght' 440, 'wdth' 115; transform: translate(-0.6px, 0.5px) rotate(-0.3deg); opacity: 0.92; }
+    75% { font-variation-settings: 'wght' 360, 'wdth' 85; transform: translate(0.5px, -0.4px) rotate(0.2deg); opacity: 0.93; }
+}
+
+@keyframes surprise {
+    0%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; opacity: 1; }
+    50% { font-variation-settings: 'wght' 600, 'wdth' 150; opacity: 1; }
+}
+
+@keyframes disgust {
+    0%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; opacity: 1; }
+    50% { font-variation-settings: 'wght' 500, 'wdth' 55; opacity: 1; }
+}
+
+/* Added placeholder for amazingBreathing, copy of surprise for now */
+@keyframes amazingBreathing {
+    0%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; opacity: 1; }
+    50% { font-variation-settings: 'wght' 600, 'wdth' 150; opacity: 1; }
+}
+
+/* Secondary animations (if used by the script) */
+@keyframes joyBounceExpand {
+    0%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; transform: translateY(0) scale(1); }
+    40% { font-variation-settings: 'wght' 700, 'wdth' 130; transform: translateY(-10px) scale(1.1, 0.95); }
+    60% { font-variation-settings: 'wght' 500, 'wdth' 90; transform: translateY(-5px) scale(0.95, 1.05); }
+    80% { font-variation-settings: 'wght' 650, 'wdth' 120; transform: translateY(-8px) scale(1.05, 0.9); }
+}
+
+@keyframes sadnessLean {
+    0%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; transform: skew(0deg); }
+    50% { font-variation-settings: 'wght' 300, 'wdth' 80; transform: skew(-12deg); }
+}
+
+@keyframes angerStretch { 
+    0%, 15%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; }
+    20%, 90% { font-variation-settings: 'wght' 700, 'wdth' 125; }
+}
+
+@keyframes angerRattle {
+    0%, 100% { transform: translate(0, 0) rotate(0); }
+    25% { transform: translate(-2px, 1px) rotate(-3deg); }
+    75% { transform: translate(2px, -1px) rotate(3deg); }
+}
+
+@keyframes surprisePop {
+    0%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; transform: scale(1); }
+    30% { font-variation-settings: 'wght' 600, 'wdth' 150; transform: scale(1.5, 0.5); }
+    50% { font-variation-settings: 'wght' 400, 'wdth' 50; transform: scale(0.5, 1.5); }
+    70% { font-variation-settings: 'wght' 500, 'wdth' 120; transform: scale(1.2, 0.8); }
+    85% { font-variation-settings: 'wght' 450, 'wdth' 90; transform: scale(0.9, 1.1); }
+}
+
+@keyframes fearShake {
+    0%, 100% { font-variation-settings: 'wght' 400, 'wdth' 100; transform: translateX(0); }
+    25% { font-variation-settings: 'wght' 300, 'wdth' 60; transform: translateX(-4px); }
+    75% { font-variation-settings: 'wght' 300, 'wdth' 60; transform: translateX(4px); }
+}
+
+@keyframes disgustDistort {
+    0%, 100% { font-variation-settings: 'wght' var(--start-weight, 400), 'wdth' var(--start-width, 100); transform: skew(0deg); }
+    25% { font-variation-settings: 'wght' var(--peak-weight, 600), 'wdth' var(--peak-width, 70); transform: skew(var(--skew-angle, -10deg)); }
+    75% { font-variation-settings: 'wght' var(--low-weight, 300), 'wdth' var(--low-width, 90); transform: skew(calc(var(--skew-angle, -10deg) * -0.7)); }
+}
+
+/* Placeholder classes for emotion-specific animated spans (empty as in text_test/style.css) */
+.emotion-joy span.animated {}
+.emotion-sadness span.animated {}
+.emotion-anger span.animated {}
+.emotion-fear span.animated {}
+.emotion-surprise span.animated {}
+.emotion-disgust span.animated {}
+
+/* Loading indicator style (from text_test/style.css, adapted) */
+.loading-indicator {
+    text-align: center;
+    margin: 10px 0;
+    font-style: italic;
+    color: rgba(0,0,0,0.7); /* Adjusted color */
+    display: none; /* Hidden by default */
+}
+
+/* Ensure the text mask works with the new structure */
+/* This was originally on .layout-main-text .message, which is now #analyzedMessageOutput */
+/* The key properties are background-clip: text and color: transparent */
+#analyzedMessageOutput {
+    /* ... other styles like display:flex, align-items, justify-content should be here or inherited ... */
+    /* background: url('test_image.png') center/cover; */ /* Commented out as masking is removed */
+    /* -webkit-background-clip: text; */ /* Masking removed */
+    /* background-clip: text; */ /* Masking removed */
+    color: #000; /* Changed to black */
+    /* filter: blur(0.5px); /* Original text blur - keep if desired for the text itself */
+    /* font-size, weight, etc from original .layout-main-text .message, .line, .word should apply */
+    /* For example, if .layout-main-text had a base font size, ensure it's still effective */
+}
+
+/* If #analyzedMessageOutput is inside .layout-main-text, this ::before applies to the area */
+/* Commenting out this rule to remove the explicit blurry background behind Layout 3 text 
+.layout-main-text::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('test_image.png');
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px); 
+    z-index: -1; 
+    opacity: 0.7; 
+}
+*/
+
+/* Override specific styles from text_test if they conflict with Layout 3's design */
+#analyzedMessageOutput .wordSpan,
+#analyzedMessageOutput .wordSpan span.animated {
+    font-family: inherit; /* Ensure they use SF-Pro from parent */
+    font-size: inherit; /* Inherit font size from #analyzedMessageOutput or its lines */
+    line-height: inherit; /* Inherit line-height */
+    /* Any other specific text_test styles that break Layout 3 appearance can be reset here */
+}
+
+/* The sizing of text in #analyzedMessageOutput should match the original "Layout 3" design. */
+/* The original .layout-main-text .message styling included: */
+/*
+  font-size: 70px; 
+  font-weight: 300;
+  line-height: 1.5;
+*/
+/* These should be applied to #analyzedMessageOutput or its direct text children if not already */
+#analyzedMessageOutput {
+    font-size: 32px; /* Corrected to match original .message font size */
+    font-weight: 300; /* Match original Layout 3 big text */
+    line-height: 1.0; /* Increased for slightly more line spacing */
+    padding: 0 20px;
+    color: #000 !important;
+    /* Ensure flex properties from original .message are present if needed for alignment */
+    text-align: left;
+    width: 100%;
+}
+
+/* Styling for .line elements created by renderWordEmotions - NO LONGER CREATING EXPLICIT .line DIVs */
+/* Commenting out old .line styles as they might conflict or be unneeded */
+/*
+#analyzedMessageOutput .line {
+    width: fit-content; 
+    display: block; 
+    white-space: nowrap; 
+    overflow: visible; 
+}
+
+#analyzedMessageOutput .line + .line {
+    margin-top: -12px; 
+}
+*/
+
+/* Ensure word spacing is minimal as per original request, can be overridden by JS for specific words */
+#analyzedMessageOutput .wordSpan {
+    /* margin: 0 2px 8px 2px; */ /* Margins removed, spacing via text nodes and line-height for lines */
+    display: inline-block !important; /* Reverted to inline-block, as it's more robust for animated elements */
+    vertical-align: baseline; 
+    /* border: 1px solid blue; */ /* --- DEBUG BORDER REMOVED --- */
+    /* background-color: rgba(0, 0, 255, 0.05); */ /* Lighter background for debug REMOVED */
+    padding: 0 1px; /* Tiny padding to ensure background shows around text */
+    margin-right: 3px; /* Restoring a small margin as textNode(' ') might not be enough with inline-block */
+    margin-bottom: 0px; /* Reduced from 2px for even tighter spacing between lines */
+}
+#analyzedMessageOutput .wordSpan:first-child {
+    margin-left: 0;
+}
+#analyzedMessageOutput .wordSpan:last-child {
+    margin-right: 0;
+}
+
+/* For any specific font settings for words like "I just wanted", "to", "say", "you", "amazing" */
+/* these were previously handled by classes like .condensed, .word-you, .word-amazing. */
+/* The new script will apply font-variation-settings directly via animations. */
+/* If base variations are needed before animation, the script should handle that or new CSS rules might be needed. */
+/* For now, assuming animations will define the primary look. */
+
+/* Update background when art is generated */
+body.art-generated {
+    background: none;
+}
+
+body.art-generated::before {
+    background-image: var(--generated-art-url);
+    opacity: 1;
+}
+
+body.art-generated .layout-image::before {
+    background-image: var(--generated-art-url);
+}
+
+.content-warning {
+    font-size: 12px;
+    color: #ff4444;
+    margin-top: 5px;
+    font-weight: 500;
+    display: none;
+}
+
+.content-warning.visible {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Placeholder class for curse animation */
+.emotion-curse span.animated {}

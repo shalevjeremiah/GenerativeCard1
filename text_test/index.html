@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Emotion Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Text Emotion Analyzer</h1>
+        
+        <!-- Main App Section -->
+        <div class="app-section">
+            <h2>Enter Your Text</h2>
+            <div class="input-section">
+                <textarea id="textInput" rows="5" placeholder="Enter your text here..."></textarea>
+                <div class="button-group">
+                    <button id="analyzeBtn">Analyze Emotions</button>
+                    <button id="speakBtn">Speak Text</button>
+                </div>
+            </div>
+            
+            <div id="loading" class="loading-indicator" style="display: none;">
+                Analyzing emotions...
+            </div>
+            
+            <h2>Emotion Analysis Summary</h2>
+            <div id="summary" class="summary-box"></div>
+            
+            <h2>Detailed Word Emotions</h2>
+            <div id="wordEmotions" class="word-emotions"></div>
+        </div>
+
+        <!-- Emotion Reference Section -->
+        <div class="emotion-reference">
+            <h2>Emotion Reference Guide</h2>
+            <div class="emotion-grid">
+                <div class="emotion-card" data-emotion="joy">
+                    <div class="preview-text">Joy</div>
+                    <p>Bouncing upward motion with expanding letters</p>
+                </div>
+                <div class="emotion-card" data-emotion="sadness">
+                    <div class="preview-text">Sadness</div>
+                    <p>Slow downward motion with weight change</p>
+                </div>
+                <div class="emotion-card" data-emotion="anger">
+                    <div class="preview-text">Anger</div>
+                    <p>Quick shaking with bold weight</p>
+                </div>
+                <div class="emotion-card" data-emotion="fear">
+                    <div class="preview-text">Fear</div>
+                    <p>Subtle trembling with condensed width</p>
+                </div>
+                <div class="emotion-card" data-emotion="surprise">
+                    <div class="preview-text">Surprise</div>
+                    <p>Pop-out scaling with expanded width</p>
+                </div>
+                <div class="emotion-card" data-emotion="disgust">
+                    <div class="preview-text">Disgust</div>
+                    <p>Skewing motion with compressed width</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 

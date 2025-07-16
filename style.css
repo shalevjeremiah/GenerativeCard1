@@ -1,0 +1,2686 @@
+/* styles.css */
+
+/* reset and base */
+:root {
+    --blur-amount: 10px;
+    --input-tab-text-color: #fff;
+    --visualizer-circle-color: #fff;
+    --sweep-text-color: rgba(255,255,255,0.3);
+    --separator-line-color: #929292;
+    --background-color: #2c3e50;
+    /* Removed title-related variables */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@font-face {
+    font-family: 'SF-Pro';
+    src: url('Assets/SF-Pro.ttf') format('truetype-variations');
+}
+
+body {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    min-height: 100vh;
+    background-color: #2c3e50; /* darker background for visible blending */
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    position: relative;
+    overflow: hidden;
+    padding-top: calc(20vh + 30px); /* Position card at a fixed vertical location */
+    padding-left: calc(450px + (100vw - 900px - 485.76px) / 2); /* Center card between the two 450px lines */
+}
+
+/* Main background blur effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #000; /* fallback dark */
+    background-size: 100vw auto; /* Scale to viewport width */
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(100px) brightness(0.75); /* Increased brightness for better visibility */
+    z-index: -1;
+    transform: scale(1.5); /* Scale up to ensure full coverage */
+}
+
+.card {
+    width: 405px;
+    height: auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: none;
+    position: relative;
+    overflow: visible;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top left;
+    transform: scale(1.2) translateY(-75px);
+    display: flex;
+    flex-direction: column;
+    z-index: 2; /* ensure above pseudo-glow */
+}
+
+.card > * {
+    background: white;
+}
+
+/* Glow behind entire card using blurred cover art */
+.card::before {
+    content: '';
+    position: absolute;
+    top: -8%;
+    left: -8%;
+    width: 116%;
+    height: 116%;
+    background-image: var(--generated-art-url);
+    background-size: cover;
+    background-position: center;
+    filter: blur(60px) brightness(0.8);
+    transform: scale(1.05);
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.sliding-content {
+    position: relative;
+    background: white;
+    z-index: 3;
+    flex-grow: 0;
+    overflow: hidden;
+    max-height: 500px; /* enough to show full section */
+    transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* First layout */
+.layout-image {
+    padding: 7.2px;
+    padding-bottom: 11px; /* reduced gap to Layout 2 */
+    margin-bottom: 0;
+    position: relative;
+    z-index: 4;
+    background: white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    flex-shrink: 0;
+    cursor: none !important; /* Hide cursor in Layout 1 area only */
+}
+
+.image-container {
+    position: relative;
+    width: 390.4px;
+    height: 180.8px;
+    line-height: 0;
+    font-size: 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.main-image {
+    width: 390.4px;
+    height: 180.8px;
+    object-fit: cover;
+    margin: 0;
+    position: absolute;
+    top: 7.2px;
+    left: 7.2px;
+    z-index: 1;
+    background-color: white;
+    filter: blur(20px);
+    background-image: var(--generated-art-url);
+    background-size: cover;
+    background-position: center;
+    text-indent: -9999px;
+    border-radius: 12px;
+}
+
+.main-image-sharp {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    background-color: white;
+    background-image: var(--generated-art-url);
+    background-size: cover;
+    background-position: center;
+    text-indent: -9999px;
+}
+
+/* Layout image blur effect */
+.layout-image::before {
+    display: none;
+}
+
+/* Second Layout - Info Top */
+.layout-info-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 20px 10px 20px; /* tighter vertical spacing */
+    margin: 0;
+    position: relative;
+    z-index: 3;
+    background: white;
+}
+
+/* Add white background strip to hide subpixel gap */
+.layout-info-top::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -1px;
+    right: -1px;
+    height: 6px;
+    background: white;
+    z-index: -2; /* Behind canvas art (which is z-index 0-1) */
+}
+
+/* Additional safety strip on layout-image bottom */
+.layout-image::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: white;
+    z-index: -1; /* Behind canvas art but above other background elements */
+}
+
+/* Overlap by 2px when card is expanded to hide subpixel rendering gap */
+.card:not(.minimized) .layout-info-top {
+    margin-top: 0px;
+}
+
+.info-left {
+    display: flex;
+    gap: 40px;  /* Increased from 9.6px */
+}
+
+.text-box h3 {
+    font-size: 8px;
+    color: #000000;
+    opacity: 0.3;  /* Reduced by 20% (0.5 - 0.2 = 0.3) */
+    margin-bottom: 1.6px;  /* 8px / 5 */
+    font-weight: 500;  /* normal weight */
+    text-transform: uppercase;  /* Make text uppercase */
+}
+
+.text-box p {
+    font-size: 12px;
+    color: #515151;
+    font-weight: 500;  /* semi-bold */
+    opacity: 0.7;  /* Reduced by additional 30% (0.8 - 0.3 = 0.5) */
+}
+
+.waves-image {
+    height: 20px;  /* 100px / 5 */
+    object-fit: contain;
+    margin-top: 4px;  /* Add space to move it down */
+}
+
+/* Third Layout - Main Text */
+.layout-main-text {
+    padding: 0;
+    padding-top: 8px;
+    padding-bottom: 16px; /* larger gap to Layout 4 */
+    text-align: left;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0;
+    position: relative;
+    z-index: 2;
+    background: white;
+}
+
+#messageInput {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 15px;
+}
+
+.message {
+    font-family: 'SF-Pro', sans-serif;
+    font-size: 32px;
+    line-height: 1.5;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    position: relative;
+    color: black;
+}
+
+.char {
+    display: inline-block;
+    transition: transform 0.2s ease;
+    transform: scale(var(--scale, 1));
+    transform-origin: center;
+    position: relative;
+}
+
+.line {
+    position: relative;
+}
+
+.word {
+    display: inline-block;
+    position: relative;
+}
+
+.line {
+    white-space: nowrap;
+    display: block;
+    width: fit-content;  /* Changed from 100% to fit-content */
+    overflow: visible;   /* Changed from hidden to visible */
+}
+
+.line + .line {
+    margin-top: -12px;  /* Reduced from -15px */
+}
+
+/* Individual word styles */
+.word-space {
+    margin-right: 2px;  /* Reduced from 4px */
+}
+
+.word-space-extended {
+    margin-right: 2px;  /* Already at 2px */
+}
+
+.word-before-extended {
+    margin-right: 2px;  /* Reduced from 4px */
+}
+
+/* Font variation settings */
+.word-normal {
+    font-variation-settings: 'wght' 300, 'wdth' 100;
+}
+
+.word-normal.condensed {
+    font-variation-settings: 'wght' 200, 'wdth' 75;
+}
+
+.word-you {
+    font-variation-settings: 'wght' 500, 'wdth' 100;
+}
+
+.word-say {
+    font-variation-settings: 'wght' 300, 'wdth' 150;
+}
+
+.word-look {
+    font-variation-settings: 'wght' 300, 'wdth' 100;
+}
+
+.word-amazing {
+    display: inline-flex;
+}
+
+.word-amazing span {
+    display: inline-block;
+}
+
+/* Fourth layout */
+.layout-info-bottom {
+    background: white;
+    z-index: 2;
+    margin: 0;
+    padding: 8px 20px;
+    padding-top: 8px; /* keep consistent */
+    padding-bottom: 18px; /* adds gap before card base */
+    margin-top: -1px; /* overlap to hide hairline */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    flex-shrink: 0;
+    position: relative;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+    border-top: none;
+}
+
+.layout-info-bottom:hover {
+    background-color: #f0f0f0 !important; /* solid light grey mask */
+}
+
+/* Hide the arrow since we're using the whole bottom section */
+.arrow-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    pointer-events: auto; /* Allow clicks to pass through */
+}
+
+.arrow {
+    position: relative;
+    width: 35px;
+    height: 21px;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+}
+
+.arrow::before,
+.arrow::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 1.4px;
+    height: 24.5px;
+    background-color: rgba(0, 0, 0, 0.20);
+}
+
+.arrow::before {
+    left: 50%;
+    transform: rotate(-60deg);
+    transform-origin: top center;
+}
+
+.arrow::after {
+    left: 50%;
+    transform: rotate(60deg);
+    transform-origin: top center;
+}
+
+/* Remove the old arrow image styles */
+.arrow-container img {
+    display: none;
+}
+
+/* Hide legacy debug controls */
+.test-controls {
+  display: none !important;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.test-controls input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    flex: 1;
+}
+
+.test-controls input:focus {
+    border-color: #3498db;
+}
+
+/* Voice recording styles */
+.record-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.record-button:hover {
+    background-color: #e0e0e0;
+}
+
+.record-button.recording {
+    background-color: #ff4444;
+    animation: pulse 1.5s infinite;
+}
+
+.record-button i {
+    font-size: 16px;
+    color: #333;
+}
+
+.record-button.recording i {
+    color: white;
+}
+
+.recording-status {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    min-height: 20px;
+    transition: color 0.3s ease;
+}
+
+.recording-status.warning {
+    color: #ff4444;
+}
+
+#analyzeSentenceBtn {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+#analyzeSentenceBtn:hover {
+    background-color: #2980b9;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7);
+    }
+    70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(255, 68, 68, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 68, 68, 0);
+    }
+}
+
+/* Minimized state */
+.card.minimized {
+    min-height: auto;
+    height: auto;
+}
+
+.card.minimized .sliding-content {
+    max-height: 0;
+}
+
+.card.minimized .layout-info-top,
+.card.minimized .layout-main-text {
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: transform 0.4s ease;
+}
+
+/* Keep Layout 1 and 4 visible */
+.card.minimized .layout-image,
+.card.minimized .layout-info-bottom {
+    opacity: 1;
+}
+
+/* Layout 4 should stick to Layout 1 when minimized */
+.card.minimized .layout-info-bottom {
+    margin-top: -1px; /* overlap to hide hairline gap */
+    transition: none; /* remove delay when toggling */
+}
+
+/* Arrow rotation */
+.card.minimized .arrow {
+    transform: rotate(180deg);
+}
+
+/* === Added for text_test integration === */
+
+/* Input Layout Styles */
+.input-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 20px; /* Adjusted padding */
+  gap: 10px;
+  width: calc(100% - 40px); /* Match padding of other layouts */
+  margin: 0 auto; /* Center it if it's not full width of card */
+}
+
+.input-layout .input-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.input-layout input[type="text"] {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  font-size: 16px; /* Adjust as needed */
+  font-family: 'SF-Pro', sans-serif;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #000;
+}
+
+.input-layout input[type="text"]::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.input-layout button#analyzeSentenceBtn {
+  padding: 10px 20px;
+  font-size: 16px; /* Adjust as needed */
+  font-family: 'SF-Pro', sans-serif;
+  font-weight: 600;
+  border: none;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.input-layout button#analyzeSentenceBtn:hover {
+  background-color: rgba(0, 0, 0, 1);
+}
+
+/* Styles for analyzed text output, ensuring it fits Layout 3 style */
+#analyzedMessageOutput {
+    font-size: 32px;
+    font-weight: 200; /* Thin weight */
+    line-height: 1.0; /* Increased for slightly more line spacing */
+    padding: 0 20px;
+    color: #000 !important;
+    text-align: left;
+    width: 100%;
+}
+
+/* New class for the outer wrapper span that handles flow */
+#analyzedMessageOutput .word-flow-wrapper {
+    display: inline-block;
+    vertical-align: baseline;
+    margin-right: 0px;
+    margin-bottom: 0; /* Removed margin between lines */
+}
+
+#analyzedMessageOutput .wordSpan {
+    display: inline-block !important;
+    vertical-align: baseline;
+    padding: 0 1px; /* add small horizontal padding */
+    margin-right: 1px; /* slight gap */
+    margin-bottom: 0px;
+    color: #515151;
+}
+
+/* Copied and adapted from text_test/style.css */
+.wordSpan {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    margin: 0 1px; /* matching gap */
+    border-radius: 4px;
+    cursor: default;
+    vertical-align: baseline;
+}
+
+#analyzedMessageOutput .sentence {
+    line-height: 0.4;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+}
+
+.wordSpan span.animated {
+    display: inline-block;
+    position: relative;
+    transform-origin: center;
+    will-change: transform, font-variation-settings, opacity;
+    text-align: center;
+}
+
+/* Emotion-specific animations (Copied from text_test/style.css) */
+@keyframes joy {
+    0%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; opacity: 1; }
+    50% { font-variation-settings: 'wght' 500, 'wdth' 140; opacity: 1; }
+}
+
+@keyframes sadness {
+    0%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; opacity: 1; }
+    50% { font-variation-settings: 'wght' 300, 'wdth' 60; opacity: 1; }
+}
+
+@keyframes anger {
+    0%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; transform: rotate(0deg) scale(1) translate(0, 0) skewX(0deg); opacity: 1; }
+    40% { font-variation-settings: 'wght' 800, 'wdth' 140; transform: rotate(3deg) scale(1.03) translate(2.4px, -1.9px) skewX(-3deg); opacity: 1; }
+    55% { font-variation-settings: 'wght' 450, 'wdth' 95; transform: rotate(-2deg) scale(0.98) translate(-1.4px, 1.4px) skewX(1.5deg); opacity: 1; }
+    75% { font-variation-settings: 'wght' 430, 'wdth' 100; transform: rotate(0.6deg) scale(1.0) translate(0.7px, -0.7px) skewX(-0.5deg); opacity: 1; }
+}
+
+@keyframes fear {
+    0%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; transform: translate(0,0) rotate(0deg); opacity: 1; }
+    15% { font-variation-settings: 'wght' 340, 'wdth' 80; transform: translate(0.8px, -0.7px) rotate(0.5deg); opacity: 0.95; }
+    30% { font-variation-settings: 'wght' 420, 'wdth' 115; transform: translate(-0.7px, 0.7px) rotate(-0.6deg); opacity: 0.92; }
+    45% { font-variation-settings: 'wght' 350, 'wdth' 75; transform: translate(0.6px, -0.6px) rotate(0.4deg); opacity: 0.9; }
+    60% { font-variation-settings: 'wght' 440, 'wdth' 115; transform: translate(-0.6px, 0.5px) rotate(-0.3deg); opacity: 0.92; }
+    75% { font-variation-settings: 'wght' 360, 'wdth' 85; transform: translate(0.5px, -0.4px) rotate(0.2deg); opacity: 0.93; }
+}
+
+@keyframes surprise {
+    0%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; opacity: 1; }
+    50% { font-variation-settings: 'wght' 600, 'wdth' 150; opacity: 1; }
+}
+
+@keyframes disgust {
+    0%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; opacity: 1; }
+    50% { font-variation-settings: 'wght' 500, 'wdth' 55; opacity: 1; }
+}
+
+/* Added placeholder for amazingBreathing, copy of surprise for now */
+@keyframes amazingBreathing {
+    0%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; opacity: 1; }
+    50% { font-variation-settings: 'wght' 600, 'wdth' 150; opacity: 1; }
+}
+
+/* Secondary animations (if used by the script) */
+@keyframes joyBounceExpand {
+    0%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; transform: translateY(0) scale(1); }
+    40% { font-variation-settings: 'wght' 700, 'wdth' 130; transform: translateY(-10px) scale(1.1, 0.95); }
+    60% { font-variation-settings: 'wght' 500, 'wdth' 90; transform: translateY(-5px) scale(0.95, 1.05); }
+    80% { font-variation-settings: 'wght' 650, 'wdth' 120; transform: translateY(-8px) scale(1.05, 0.9); }
+}
+
+@keyframes sadnessLean {
+    0%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; transform: skew(0deg); }
+    50% { font-variation-settings: 'wght' 300, 'wdth' 80; transform: skew(-12deg); }
+}
+
+@keyframes angerStretch { 
+    0%, 15%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; }
+    20%, 90% { font-variation-settings: 'wght' 700, 'wdth' 125; }
+}
+
+@keyframes angerRattle {
+    0%, 100% { transform: translate(0, 0) rotate(0); }
+    25% { transform: translate(-2px, 1px) rotate(-3deg); }
+    75% { transform: translate(2px, -1px) rotate(3deg); }
+}
+
+@keyframes surprisePop {
+    0%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; transform: scale(1); }
+    30% { font-variation-settings: 'wght' 600, 'wdth' 150; transform: scale(1.5, 0.5); }
+    50% { font-variation-settings: 'wght' 400, 'wdth' 50; transform: scale(0.5, 1.5); }
+    70% { font-variation-settings: 'wght' 500, 'wdth' 120; transform: scale(1.2, 0.8); }
+    85% { font-variation-settings: 'wght' 450, 'wdth' 90; transform: scale(0.9, 1.1); }
+}
+
+@keyframes fearShake {
+    0%, 100% { font-variation-settings: 'wght' 200, 'wdth' 100; transform: translateX(0); }
+    25% { font-variation-settings: 'wght' 300, 'wdth' 60; transform: translateX(-4px); }
+    75% { font-variation-settings: 'wght' 300, 'wdth' 60; transform: translateX(4px); }
+}
+
+@keyframes disgustDistort {
+    0%, 100% { font-variation-settings: 'wght' var(--start-weight, 400), 'wdth' var(--start-width, 100); transform: skew(0deg); }
+    25% { font-variation-settings: 'wght' var(--peak-weight, 600), 'wdth' var(--peak-width, 70); transform: skew(var(--skew-angle, -10deg)); }
+    75% { font-variation-settings: 'wght' var(--low-weight, 300), 'wdth' var(--low-width, 90); transform: skew(calc(var(--skew-angle, -10deg) * -0.7)); }
+}
+
+/* Placeholder classes for emotion-specific animated spans (empty as in text_test/style.css) */
+.emotion-joy span.animated {}
+.emotion-sadness span.animated {}
+.emotion-anger span.animated {}
+.emotion-fear span.animated {}
+.emotion-surprise span.animated {}
+.emotion-disgust span.animated {}
+
+/* Loading indicator style (from text_test/style.css, adapted) */
+.loading-indicator {
+    text-align: center;
+    margin: 10px 0;
+    font-style: italic;
+    color: rgba(0,0,0,0.7); /* Adjusted color */
+    display: none; /* Hidden by default */
+}
+
+/* Ensure the text mask works with the new structure */
+/* This was originally on .layout-main-text .message, which is now #analyzedMessageOutput */
+/* The key properties are background-clip: text and color: transparent */
+#analyzedMessageOutput {
+    /* ... other styles like display:flex, align-items, justify-content should be here or inherited ... */
+    /* background: url('test_image.png') center/cover; */ /* Commented out as masking is removed */
+    /* -webkit-background-clip: text; */ /* Masking removed */
+    /* background-clip: text; */ /* Masking removed */
+    color: #000; /* Changed to black */
+    /* filter: blur(0.5px); /* Original text blur - keep if desired for the text itself */
+    /* font-size, weight, etc from original .layout-main-text .message, .line, .word should apply */
+    /* For example, if .layout-main-text had a base font size, ensure it's still effective */
+}
+
+/* If #analyzedMessageOutput is inside .layout-main-text, this ::before applies to the area */
+/* Commenting out this rule to remove the explicit blurry background behind Layout 3 text 
+.layout-main-text::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('test_image.png');
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px); 
+    z-index: -1; 
+    opacity: 0.7; 
+}
+*/
+
+/* Override specific styles from text_test if they conflict with Layout 3's design */
+#analyzedMessageOutput .wordSpan,
+#analyzedMessageOutput .wordSpan span.animated {
+    font-family: inherit; /* Ensure they use SF-Pro from parent */
+    font-size: inherit; /* Inherit font size from #analyzedMessageOutput or its lines */
+    line-height: inherit; /* Inherit line-height */
+    /* Any other specific text_test styles that break Layout 3 appearance can be reset here */
+}
+
+/* The sizing of text in #analyzedMessageOutput should match the original "Layout 3" design. */
+/* The original .layout-main-text .message styling included: */
+/*
+  font-size: 70px; 
+  font-weight: 300;
+  line-height: 1.5;
+*/
+/* These should be applied to #analyzedMessageOutput or its direct text children if not already */
+#analyzedMessageOutput {
+    font-size: 32px; /* Corrected to match original .message font size */
+    font-weight: 200; /* Thin weight */
+    line-height: 1.0; /* Increased for slightly more line spacing */
+    padding: 0 20px;
+    color: #000 !important;
+    /* Ensure flex properties from original .message are present if needed for alignment */
+    text-align: left;
+    width: 100%;
+}
+
+/* Styling for .line elements created by renderWordEmotions - NO LONGER CREATING EXPLICIT .line DIVs */
+/* Commenting out old .line styles as they might conflict or be unneeded */
+/*
+#analyzedMessageOutput .line {
+    width: fit-content; 
+    display: block; 
+    white-space: nowrap; 
+    overflow: visible; 
+}
+
+#analyzedMessageOutput .line + .line {
+    margin-top: -12px; 
+}
+*/
+
+/* Ensure word spacing is minimal as per original request, can be overridden by JS for specific words */
+#analyzedMessageOutput .wordSpan {
+    /* margin: 0 2px 8px 2px; */ /* Margins removed, spacing via text nodes and line-height for lines */
+    display: inline-block !important; /* Reverted to inline-block, as it's more robust for animated elements */
+    vertical-align: baseline; 
+    /* border: 1px solid blue; */ /* --- DEBUG BORDER REMOVED --- */
+    /* background-color: rgba(0, 0, 255, 0.05); */ /* Lighter background for debug REMOVED */
+    padding: 0 1px; /* add small horizontal padding */
+    margin-right: 1px; /* slight gap */
+    margin-bottom: 0px; /* Reduced from 2px for even tighter spacing between lines */
+}
+#analyzedMessageOutput .wordSpan:first-child {
+    margin-left: 0;
+}
+#analyzedMessageOutput .wordSpan:last-child {
+    margin-right: 0;
+}
+
+/* For any specific font settings for words like "I just wanted", "to", "say", "you", "amazing" */
+/* these were previously handled by classes like .condensed, .word-you, .word-amazing. */
+/* The new script will apply font-variation-settings directly via animations. */
+/* If base variations are needed before animation, the script should handle that or new CSS rules might be needed. */
+/* For now, assuming animations will define the primary look. */
+
+/* Update background when art is generated */
+body.art-generated {
+    background: none;
+}
+
+body.art-generated::before {
+    background-image: var(--generated-art-url);
+    opacity: 1;
+    filter: blur(100px) brightness(0.5); /* Reset to normal brightness for generated art */
+}
+
+body.art-generated .layout-image::before {
+    background-image: var(--generated-art-url);
+}
+
+.content-warning {
+    font-size: 12px;
+    color: #ff4444;
+    margin-top: 5px;
+    font-weight: 500;
+    display: none;
+}
+
+.content-warning.visible {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Placeholder class for curse animation */
+.emotion-curse span.animated {}
+
+/* Canvas container and WebGL displacement styles */
+.canvas-container {
+    position: relative;
+    margin: 0 auto;
+    overflow: visible; /* allow blurred halo to bleed out */
+    width: 100%; /* Fills layout-image width */
+    height: 180.8px; /* Fixed height matches design */
+    border-radius: 5px; /* matches card's inner image radius */
+    background: transparent;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    cursor: none !important; /* Hide cursor in art generation area */
+}
+
+/* Halo blur duplicate behind cover art */
+.canvas-container::before {
+    content: '';
+    position: absolute;
+    top: -12%;
+    left: -12%;
+    width: 124%;
+    height: 124%;
+    background-image: var(--generated-art-url);
+    background-size: cover;
+    background-position: center;
+    filter: blur(35px);
+    transform: none;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.4; /* 20% less visible */
+}
+
+/* ensure original art is above */
+#artCanvas,
+#displacementCanvas {
+    position: relative;
+    z-index: 1;
+    border-radius: 5px;
+}
+
+#artCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    z-index: 1;
+    transition: filter 0.1s ease, box-shadow 0.1s ease;
+}
+
+#artCanvas.blur-enabled {
+    filter: blur(var(--blur-amount, 5px));
+}
+
+#displacementCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    z-index: 10;
+    pointer-events: none;
+    transition: filter 0.1s ease, box-shadow 0.1s ease;
+}
+
+/* Brightness overlay layer - sits above all art elements */
+.brightness-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 70%, transparent 100%);
+    border-radius: 5px;
+    z-index: 20; /* Above all art elements */
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen; /* Creates additive brightness effect */
+    transition: opacity 0.3s ease;
+}
+
+/* Looping pulse animation for generated cards */
+.brightness-overlay.pulse-loop {
+    animation: brightness-pulse-loop 3s ease-in-out infinite;
+}
+
+/* Audio-reactive brightness during recording */
+.brightness-overlay.audio-reactive {
+    animation: none; /* Disable loop during recording */
+    transition: opacity 0.1s ease;
+}
+
+/* Keyframes for looping brightness pulse */
+@keyframes brightness-pulse-loop {
+    0% { 
+        opacity: 0.2;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.6;
+        transform: scale(1.02);
+    }
+    100% { 
+        opacity: 0.2;
+        transform: scale(1);
+    }
+}
+
+#equalizerCanvas {
+    position: absolute;
+    top: -1000px; /* hidden off-screen */
+    left: -1000px;
+    width: 390.4px;
+    height: 180.8px;
+    pointer-events: none;
+}
+
+.hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: all;
+    cursor: none !important;
+    opacity: 0; /* invisible but interactive */
+}
+
+/* Disable hover interaction in Layout 3 */
+.layout-3 * {
+    pointer-events: none !important;
+}
+
+.canvas-container canvas {
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+/* Placeholder + analyzed text uniform style */
+#analyzedMessageOutput .wordSpan,
+#analyzedMessageOutput .wordSpan span {
+    font-size: 25px !important;
+    font-weight: 200; /* Thin */
+    font-variation-settings: 'wdth' 120;
+    color: #515151;
+}
+
+/* Lower arrow when card is open */
+.card:not(.minimized) .arrow-container {
+    top: 60%; /* lowered a bit more */
+}
+
+/* ===============================
+   InputTabs / Side Panel Styles
+   ===============================*/
+
+.card-wrapper {
+    position: relative; /* so input-tabs can be absolutely placed */
+    display: inline-block; /* shrink-wrap to card width */
+}
+
+.input-tabs {
+    position: fixed;
+    left: 50px; /* 50px padding from left edge */
+    top: 0; /* exact position will be adjusted by JS */
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    z-index: 1; /* above background layers but below card */
+    height: auto; /* dynamic via JS */
+}
+
+/* Edit title positioned above inputTabs */
+.edit-title {
+    position: fixed;
+    left: 20px;
+    bottom: 560px; /* Position it above the author tab which is at 456px */
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 24px;
+    font-weight: 120;
+    font-variation-settings: 'wdth' 132;
+    color: #fff;
+    mix-blend-mode: overlay;
+    z-index: 10000;
+    pointer-events: auto;
+    cursor: default;
+    user-select: none;
+    /* Ensure precise hover area limited to text bounds */
+    width: fit-content;
+    height: fit-content;
+}
+
+/* Preview title positioned above inputTabs */
+.preview-title {
+    position: fixed;
+    left: 200px;
+    bottom: 560px;
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 24px;
+    font-weight: 120;
+    font-variation-settings: 'wdth' 132;
+    color: #fff;
+    mix-blend-mode: overlay;
+    z-index: 10000;
+    pointer-events: auto;
+    cursor: default;
+    user-select: none;
+    /* Ensure precise hover area limited to text bounds */
+    width: fit-content;
+    height: fit-content;
+}
+
+/* Share title positioned above inputTabs */
+.share-title {
+    position: fixed;
+    left: 300px;
+    bottom: 560px;
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 24px;
+    font-weight: 120;
+    font-variation-settings: 'wdth' 132;
+    color: #fff;
+    mix-blend-mode: overlay;
+    z-index: 10000;
+    pointer-events: auto;
+    cursor: default;
+    user-select: none;
+    /* Ensure precise hover area limited to text bounds */
+    width: fit-content;
+    height: fit-content;
+}
+
+/* Duplicate titles for enhanced visibility with overlay blending */
+.edit-title-2 {
+    position: fixed;
+    left: 20px;
+    bottom: 560px;
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 24px;
+    font-weight: 120;
+    font-variation-settings: 'wdth' 132;
+    color: #fff;
+    mix-blend-mode: overlay;
+    z-index: 10001; /* Slightly higher than original */
+    pointer-events: none; /* Let clicks pass through to original */
+    cursor: default;
+    user-select: none;
+    width: fit-content;
+    height: fit-content;
+}
+
+.preview-title-2 {
+    position: fixed;
+    left: 200px;
+    bottom: 560px;
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 24px;
+    font-weight: 120;
+    font-variation-settings: 'wdth' 132;
+    color: #fff;
+    mix-blend-mode: overlay;
+    z-index: 10001; /* Slightly higher than original */
+    pointer-events: none; /* Let clicks pass through to original */
+    cursor: default;
+    user-select: none;
+    width: fit-content;
+    height: fit-content;
+}
+
+.share-title-2 {
+    position: fixed;
+    left: 300px;
+    bottom: 560px;
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 24px;
+    font-weight: 120;
+    font-variation-settings: 'wdth' 132;
+    color: #fff;
+    mix-blend-mode: overlay;
+    z-index: 10001; /* Slightly higher than original */
+    pointer-events: none; /* Let clicks pass through to original */
+    cursor: default;
+    user-select: none;
+    width: fit-content;
+    height: fit-content;
+}
+
+/* Character spans for title hover effects */
+.title-char {
+    display: inline-block;
+    transition: font-weight 0.1s ease-out;
+    font-weight: inherit;
+}
+
+.title-space {
+    display: inline-block;
+}
+
+/* Title styles removed */
+
+/* System color scheme preferences removed - using default dark mode styling */
+
+/* Vertical line separator positioned 50px to the right of inputTabs */
+.inputTab-separator {
+    position: fixed;
+    left: 450px; /* 50px (inputTabs left) + 350px (inputTabs width) + 50px (gap) */
+    top: 0;
+    width: 1px;
+    height: 100vh;
+    background: var(--separator-line-color);
+    mix-blend-mode: overlay;
+    opacity: 0.6; /* Reduced by 40% */
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* Second vertical line separator - stacked on top for stronger effect */
+.inputTab-separator-2 {
+    position: fixed;
+    left: 450px; /* Same position as first line to stack on top */
+    top: 0;
+    width: 1px;
+    height: 100vh;
+    background: var(--separator-line-color);
+    mix-blend-mode: overlay;
+    opacity: 0.6; /* Reduced by 40% */
+    z-index: 11;
+    pointer-events: none;
+}
+
+/* Right side vertical line separators - mirror the left side at 450px from right edge */
+.inputTab-separator-right {
+    position: fixed;
+    right: 450px; /* Same distance from right edge as left line is from left edge */
+    top: 0;
+    width: 1px;
+    height: 100vh;
+    background: var(--separator-line-color);
+    mix-blend-mode: overlay;
+    opacity: 0.6; /* Reduced by 40% */
+    z-index: 10;
+    pointer-events: none;
+}
+
+.inputTab-separator-right-2 {
+    position: fixed;
+    right: 450px; /* Same position as first right line to stack on top */
+    top: 0;
+    width: 1px;
+    height: 100vh;
+    background: var(--separator-line-color);
+    mix-blend-mode: overlay;
+    opacity: 0.6; /* Reduced by 40% */
+    z-index: 11;
+    pointer-events: none;
+}
+
+/* Right side inputTab positioning */
+.inputTab-right {
+    left: auto !important;
+    right: 50px !important;
+    transition: transform 0.2s ease-out !important;
+    transform-origin: center !important;
+}
+
+/* Right panel specific styling */
+.inputTab-content.rightTab,
+.inputTab-content.rightTab2,
+.inputTab-content.rightTab3,
+.inputTab-content.rightTab4 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 350px;
+    padding: 20px;
+    cursor: pointer;
+}
+
+/* Hover effect - scale the background/border when hovering over the content area */
+/* Since HTML order is: bg -> content -> content2 -> border, we need different approach */
+
+/* Direct hover on background and border elements */
+#rightTabBg:hover,
+#rightTabBorder:hover,
+#rightTabBg2:hover,
+#rightTabBorder2:hover {
+    transform: scale(1.05) !important;
+}
+
+/* When hovering over content, we'll handle this with JavaScript since CSS can't target previous siblings easily */
+
+.inputTab-content.rightTab .tab-title,
+.inputTab-content.rightTab2 .tab-title,
+.inputTab-content.rightTab3 .tab-title,
+.inputTab-content.rightTab4 .tab-title,
+.inputTab-content.rightTab .tab-content,
+.inputTab-content.rightTab2 .tab-content,
+.inputTab-content.rightTab3 .tab-content,
+.inputTab-content.rightTab4 .tab-content {
+    color: var(--input-tab-text-color) !important;
+    mix-blend-mode: overlay;
+}
+
+/* Special styling for the right panel content container */
+.right-panel-content {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    height: 100% !important;
+    width: 100% !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    gap: 10px !important;
+}
+
+/* Camera icon styling */
+.camera-icon {
+    width: 60px !important;
+    height: 48px !important;
+    mix-blend-mode: overlay !important;
+}
+
+.camera-icon path {
+    fill: var(--input-tab-text-color) !important;
+}
+
+/* Duplicate overlay layer for brighter effect */
+.right-panel-duplicate {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 3 !important;
+    pointer-events: none !important;
+}
+
+
+
+.camera-icon-duplicate {
+    width: 60px !important;
+    height: 48px !important;
+    mix-blend-mode: overlay !important;
+}
+
+.camera-icon-duplicate path {
+    fill: var(--input-tab-text-color) !important;
+}
+
+.right-panel-title-duplicate {
+    mix-blend-mode: overlay !important;
+}
+
+/* Special styling for the right panel title */
+.right-panel-title {
+    font-size: 14px !important;
+    font-weight: 200 !important;
+    text-align: center !important;
+    margin: 0 !important;
+    position: relative !important;
+}
+
+/* Horizontal separator line on left side - from left edge to left vertical separator */
+.horizontal-separator {
+    position: fixed;
+    left: 0;
+    bottom: 100px; /* 100px from bottom of page */
+    width: 450px; /* From left edge to left vertical separator */
+    height: 1px;
+    background-color: var(--separator-line-color) !important;
+    mix-blend-mode: overlay;
+    opacity: 0.6; /* Reduced by 40% */
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* Duplicate horizontal separator for stronger visual effect */
+.horizontal-separator-2 {
+    position: fixed;
+    left: 0;
+    bottom: 100px; /* Same position as first separator */
+    width: 450px; /* Same width as first separator */
+    height: 1px;
+    background-color: var(--separator-line-color) !important;
+    mix-blend-mode: overlay;
+    opacity: 0.6; /* Reduced by 40% */
+    z-index: 11;
+    pointer-events: none;
+}
+
+/* Generate Card text centered on horizontal separator line */
+.horizontal-separator-text {
+    position: fixed;
+    left: 225px; /* Middle of 450px width (450/2 = 225) */
+    bottom: 50px; /* Exact center between horizontal line (100px) and page bottom (0px) */
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 19px; /* Match record-state font size */
+    font-weight: 274; /* Custom font weight */
+    color: var(--separator-line-color) !important; /* Use separator color so it matches line (white in light mode, grey in dark) */
+    mix-blend-mode: overlay;
+    z-index: 12;
+    pointer-events: none; /* Disable direct interaction - will be handled by hover area */
+    cursor: pointer; /* Show pointer cursor */
+    transform: translateX(-50%) translateY(50%); /* Center horizontally and adjust vertical centering */
+}
+
+/* Character spans for hover effect */
+.horizontal-separator-text .generate-char {
+    display: inline-block;
+    transition: font-weight 0.1s ease-out;
+    font-weight: 274;
+}
+
+.horizontal-separator-text .generate-space {
+    width: 8px;
+    display: inline-block;
+}
+
+/* Duplicate Generate Card text for stronger visual effect */
+.horizontal-separator-text-2 {
+    position: fixed;
+    left: 225px; /* Same position as first text */
+    bottom: 50px; /* Same position as first text */
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 19px; /* Match record-state font size */
+    font-weight: 274; /* Custom font weight */
+    color: var(--separator-line-color) !important; /* Use separator color so it matches line (white in light mode, grey in dark) */
+    mix-blend-mode: overlay;
+    z-index: 13;
+    pointer-events: none; /* No interaction */
+    transform: translateX(-50%) translateY(50%); /* Center horizontally and adjust vertical centering */
+}
+
+/* Character spans for duplicate text */
+.horizontal-separator-text-2 .generate-char {
+    display: inline-block;
+    transition: font-weight 0.1s ease-out;
+    font-weight: 274;
+}
+
+.horizontal-separator-text-2 .generate-space {
+    width: 8px;
+    display: inline-block;
+}
+
+/* Save Image button text character spans */
+.right-panel-title .save-char {
+    display: inline-block;
+    /* Remove transition for instant updates */
+    font-weight: 200; /* Base weight for right panel titles */
+    will-change: font-weight; /* Optimize for font-weight changes */
+}
+
+.right-panel-title .save-space {
+    width: 4px; /* Smaller space for compact text */
+    display: inline-block;
+}
+
+
+
+/* Invisible rectangular hover area for Generate Card button */
+.generate-card-hover-area {
+    position: fixed;
+    left: 0; /* Left edge of page */
+    bottom: 0; /* Bottom of page */
+    width: 450px; /* To left vertical separator */
+    height: 100px; /* From bottom to horizontal line */
+    background: rgba(255, 255, 255, 0.5); /* Always have the white background */
+    mix-blend-mode: overlay; /* Always use overlay blend mode */
+    z-index: 14; /* Above all text elements */
+    cursor: not-allowed; /* Default disabled cursor */
+    pointer-events: none; /* Default disabled interaction */
+    /* Use clip-path to create sliding effect - start hidden (clipped from bottom) */
+    clip-path: inset(100% 0 0 0);
+    transition: clip-path 0.6s cubic-bezier(0.4, 0, 0.2, 1), cursor 0.3s ease;
+}
+
+/* Slide in overlay when enabled */
+.generate-card-hover-area.enabled {
+    cursor: pointer !important;
+    pointer-events: auto;
+    /* Reveal the overlay by clipping nothing */
+    clip-path: inset(0 0 0 0);
+}
+
+/* Slide out overlay when disabled */
+.generate-card-hover-area.disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    /* Hide overlay by clipping from bottom */
+    clip-path: inset(100% 0 0 0);
+}
+
+/* Hide duplicate text when disabled for visual hierarchy */
+.generate-card-hover-area.disabled ~ .horizontal-separator-text-2 {
+    opacity: 0;
+}
+
+/* Rewrite input tabs to match Test 3 exactly */
+.input-tab {
+    width: 350px;
+    height: 140px; /* fixed height like test3-box */
+    /* no solid background so overlay can blend */
+    border-radius: 10px;
+    padding: 20px 20px 40px 20px;
+    color: #000; /* black text for visibility on white background */
+    border: none; /* inner border removed */
+    outline: 1px solid rgba(255,255,255,0.04); /* 4% opacity outside stroke */
+    position: relative; /* ensure proper stacking context */
+}
+
+/* Add overlay background like Test 3 */
+.input-tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    mix-blend-mode: overlay;
+    border-radius: 10px;
+    pointer-events: none;
+    z-index: 1; /* background layer */
+}
+
+/* Make tab content independent from blended background */
+.input-tab .tab-title,
+.input-tab .tab-content {
+    position: relative;
+    z-index: 2; /* above blended background */
+    color: #fff !important; /* white text */
+    mix-blend-mode: overlay;
+}
+
+.input-tab .tab-title {
+    font-size: 8px; /* maintain original size */
+    font-weight: 600; /* maintain original weight */
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    opacity: 0.6; /* maintain original opacity */
+    /* color set by layering rule above */
+}
+
+.input-tab .tab-content {
+    font-size: 14px; /* maintain original size */
+    font-weight: 500; /* maintain original weight */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* color set by layering rule above */
+}
+
+/* Sender Name typing cursor */
+.cursor {
+    display: inline-block;
+    width: 2px;
+    height: 18px;
+    background: #000; /* black cursor for visibility */
+    animation: blinkCursor 0.8s steps(1) infinite;
+}
+
+@keyframes blinkCursor {
+    0%, 50% { opacity: 1; }
+    50.01%, 100% { opacity: 0; }
+}
+
+/* Recording Tab visuals */
+.record-state {
+    position: relative;
+    z-index: 2;
+    color: var(--input-tab-text-color) !important;
+    font-size: 14px;
+    font-weight: 500;
+    mix-blend-mode: overlay;
+}
+
+.record-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2; /* above blended background */
+}
+
+.record-timer {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--input-tab-text-color) !important;
+    position: relative;
+    z-index: 2;
+    mix-blend-mode: overlay;
+}
+
+.record-visualizer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.record-visualizer .circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--visualizer-circle-color) !important;
+    opacity: 0.7;
+    animation: breathe 1.2s ease-in-out infinite;
+}
+
+.record-visualizer .circle.delay { animation-delay: 0.4s; }
+.record-visualizer .circle.delay2 { animation-delay: 0.8s; }
+
+@keyframes breathe {
+    0%, 100% { transform: scale(0.75); opacity: 0.4; }
+    50% { transform: scale(1.35); opacity: 1; }
+}
+
+/* Manual typing area */
+.manual-textarea {
+    min-height: 80px;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: vertical;
+    font-family: 'SF-Pro', sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+    color: #000; /* black text for visibility */
+}
+
+.word-count {
+    font-size: 8px;
+    font-weight: 600;
+    margin-left: 6px;
+    color: #fff !important;
+    mix-blend-mode: overlay;
+}
+
+.input-tab.manual {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    height: auto; /* override fixed height for manual tab to allow growth */
+    min-height: 150px; /* minimum height to match other tabs */
+}
+
+.manual-textarea {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* Hide hairline only when card is expanded */
+.card:not(.minimized) .layout-image {
+    border-bottom: 1px solid white;
+}
+
+/* Test 3 Style Box - Background only, no text */
+.inputTab {
+    position: fixed;
+    left: 50px;
+    bottom: 50px;
+    width: 350px;
+    height: 140px;
+    background: white;
+    border-radius: 10px;
+    mix-blend-mode: overlay; /* direct overlay blend with body background */
+    border: none; /* no blur */
+    outline: none;
+    z-index: 1;
+}
+
+/* Test 3 Content - Independent text layer on top */
+.inputTab-content {
+    position: fixed;
+    left: 50px;
+    bottom: 50px;
+    width: 350px;
+    height: 140px;
+    padding: 20px 20px 40px 20px;
+    color: #fff; /* pure white text, not affected by blend mode */
+    z-index: 2; /* above the blended background */
+    pointer-events: auto; /* allow clicks to pass through to background */
+}
+
+.inputTab-content h4 {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    color: #fff !important;
+    opacity: 1.0;
+    mix-blend-mode: overlay;
+}
+
+.inputTab-content p {
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+}
+
+/* ensure all nested content uses pure white */
+.inputTab-content,
+.inputTab-content *,
+.inputTab-content .tab-title,
+.inputTab-content .tab-content,
+.inputTab-content .record-state,
+.inputTab-content .record-timer {
+    color: var(--input-tab-text-color) !important;
+    mix-blend-mode: overlay;
+}
+
+/* ===== Triple-layer text (base + 2 overlay copies) ===== */
+.duplicate-overlay{
+    position:relative;
+}
+/* First overlay copy */
+.duplicate-overlay::before{
+    content:attr(data-text);
+    position:absolute;top:0;left:0;
+    color:#fff;
+    opacity:1;              /* allow cumulative effect */
+    mix-blend-mode:overlay;  /* overlay pass 1 */
+    pointer-events:none;
+    z-index:3;
+    transform:translate(-1px,0); /* slight left offset */
+}
+/* Second overlay copy */
+.duplicate-overlay::after{
+    content:attr(data-text);
+    position:absolute;top:0;left:0;
+    color:#fff;
+    opacity:1;              /* overlay pass 2 */
+    mix-blend-mode:overlay;  /* overlay pass 2 */
+    pointer-events:none;
+    z-index:4;
+    transform:translate(1px,0);  /* slight right offset */
+}
+
+/* ===== overlay duplicated spans ===== */
+.overlay-wrapper{position:relative;display:inline-block;}
+.overlay-wrapper .overlay-copy{position:absolute;top:0;left:0;color:#fff;mix-blend-mode:overlay;pointer-events:none;}
+.overlay-wrapper .shift-left{transform:translate(-1px,0);}
+.overlay-wrapper .shift-right{transform:translate(1px,0);}
+/* base text remains white no blend */
+.overlay-wrapper .base{color:#fff;mix-blend-mode:overlay;}
+
+/* text overlay wrapper layers */
+.text-overlay-wrapper{position:relative;display:block;}
+.text-layer{position:absolute;top:0;left:0;width:100%;pointer-events:none;}
+.text-layer.base{mix-blend-mode:normal;color:#fff;z-index:2;}
+.text-layer.overlay-copy{mix-blend-mode:overlay;color:#fff;z-index:3;}
+.text-layer.shift-left{transform:translate(-1px,0);}
+.text-layer.shift-right{transform:translate(1px,0);}
+
+/* Test3 content layers */
+.inputTab{/* keep fixed from earlier definition */}
+.inputTab-content.recording,
+.inputTab-content.recording2{
+  position:fixed;
+  left:50px;
+  bottom:50px;
+  padding:20px;
+  display:flex;flex-direction:column;gap:8px;
+  color:#fff;
+  mix-blend-mode:overlay;
+}
+.inputTab-content.recording2{transform:none;}
+
+/* === Font size adjustments per Figma === */
+.input-tab.recording > .tab-title,
+.inputTab-content.recording .tab-title,
+.inputTab-content.recording2 .tab-title{
+  font-size:10px; /* reduced 20% from previous 13px */
+}
+
+.record-state{
+  font-size:19px; /* reduced 30% */
+  position:relative;
+  color: var(--input-tab-text-color) !important;
+  mix-blend-mode: overlay;
+}
+
+.record-timer{
+  font-size:37px; /* reduced 30% */
+  color: var(--input-tab-text-color) !important;
+  mix-blend-mode: overlay;
+}
+
+/* Pure white border for test3-box, not affected by blend mode */
+.inputTab-border {
+    position: fixed;
+    left: 50px;
+    bottom: 50px;
+    width: 350px;
+    height: 140px;
+    border: 1px solid #ffffff19;
+    border-radius: 10px;
+    pointer-events: none;
+    z-index: 100;
+    box-sizing: border-box;
+}
+
+/* Mask SVG circles inside the inputTab-content box and layer them behind text */
+.inputTab-content {
+  position: fixed;
+  left: 50px;
+  bottom: 50px;
+  width: 350px;
+  height: 140px;
+  padding: 20px 20px 40px 20px;
+  color: #fff;
+  z-index: 2;
+  pointer-events: auto;
+  mix-blend-mode: overlay;
+  overflow: hidden; /* mask children */
+  border-radius: 10px;
+}
+.inputTab-circles {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  pointer-events: auto; /* allow interactions */
+  display: block;
+}
+.inputTab-content > *:not(.inputTab-circles) {
+  position: relative;
+  z-index: 2;
+}
+
+/* ==== Recording State Circle Animations ==== */
+.circle-outer {
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Expansion and breathing in recording state */
+.inputTab-content.recording-active .circle-outer {
+  transform: scale(1);
+  animation: none;
+  /* keep the base smooth transition */
+}
+
+/* Ensure breathing animation stops immediately on collapse for smooth shrink */
+.inputTab-content.recording-collapsing .circle-outer {
+  animation: none; /* stop breathing */
+  transform: scale(1); /* start at full size */
+}
+
+.inputTab-content.recording-collapsing.shrink .circle-outer {
+  transform: scale(0); /* animate to collapsed */
+  transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes breath {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* Ensure inner circle is clickable cursor */
+.inner-shape {
+  z-index: 3;
+  pointer-events: auto;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+
+/* Inner circle shrink during active recording */
+.inputTab-content.recording-active .inner-shape,
+.inputTab-content.recording-active .circle-mid {
+  transform: scale(0.85);
+}
+
+/* Return to full size in collapsing/idle */
+.inputTab-content.recording-collapsing .inner-shape,
+.inputTab-content.recording-collapsing .circle-mid,
+.inputTab-content.shrink .inner-shape,
+.inputTab-content.shrink .circle-mid,
+.inputTab-content:not(.recording-active) .inner-shape,
+.inputTab-content:not(.recording-active) .circle-mid {
+  transform: scale(1);
+  rx:12px;
+  ry:12px;
+}
+
+/* Disable mouse on text to allow circle clicks */
+.inputTab-content .tab-title,
+.inputTab-content .tab-content,
+.inputTab-content .record-state,
+.inputTab-content .record-info,
+.inputTab-content .record-timer {
+  pointer-events: none;
+}
+
+/* Transparent overlay to capture clicks regardless of underlying elements */
+.inputTab-click-overlay{
+  position:fixed;
+  left:50px;
+  bottom:50px;
+  width:350px; /* keep in sync with box width */
+  height:140px; /* same height */
+  background:transparent;
+  z-index:999; /* above everything else in tab */
+  cursor:pointer;
+  pointer-events:auto;
+}
+
+/* ===== Horizontal shimmer masked to text ===== */
+.shimmer-text{
+  display:inline-block;
+  color: transparent;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0) 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  background-size: 200% 100%;
+  animation: shimmerH 1.2s linear infinite;
+  mix-blend-mode: normal !important;
+}
+
+.dots{ display:inline-block; }
+
+@keyframes shimmerH {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ===== Sweep text animation (learned from provided example) ===== */
+.sweep-text {
+  display:inline-block;
+  background: -webkit-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%) no-repeat;
+  background-size: 200% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color: var(--sweep-text-color);
+  animation: sweep 1s linear infinite;
+  mix-blend-mode: normal !important;
+}
+
+@keyframes sweep {
+  0%   { background-position: 150% 0; }
+  100% { background-position: -150% 0; }
+}
+
+/* Sweep text wrapper with overlay copies */
+.sweep-wrapper{position:relative;display:inline-block;}
+
+/* ===== RECORDING INDICATOR ANIMATION ===== */
+/* Flickering animation for record icon dots while recording */
+@keyframes recordFlicker {
+  0%, 45% { 
+    opacity: 1;
+  }
+  50%, 95% { 
+    opacity: 0.2;
+  }
+  100% { 
+    opacity: 1;
+  }
+}
+
+/* Apply animation to ALL record icon circles when recording is active - SIMPLIFIED */
+body.screen-recording .record-icon circle,
+body.screen-recording .record-icon-duplicate circle,
+body.screen-recording .record-icon-dark {
+  animation: recordFlicker 1.2s ease-in-out infinite !important;
+}
+.sweep-text.overlay-copy{
+  position:absolute;inset:0;
+  mix-blend-mode:overlay;
+  pointer-events:none;
+}
+
+/* ===== SAVE CLIP LOADING BAR ===== */
+.save-clip-loading-bar {
+  position: absolute;
+  top: 80px; /* Position below the "SAVE CLIP" text */
+  left: 52%;
+  transform: translateX(-50%);
+  width: 324px; /* Stretched from 120px to 180px */
+  height: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.save-clip-loading-bar.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.loading-bar-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  mix-blend-mode: overlay;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.loading-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 2px;
+  mix-blend-mode: overlay;
+  transition: width 0.3s ease;
+}
+
+  .loading-bar-text {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 9px;
+    font-weight: 400;
+    color: var(--input-tab-text-color);
+    mix-blend-mode: overlay;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+/* ===== INSTRUCTIONS SECTION ===== */
+.instructions-section {
+  position: fixed;
+  left: 50px;
+  bottom: 150px; /* Above the Generate Card button */
+  width: 500px;
+  text-align: left;
+  z-index: 5;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+.instructions-section-duplicate {
+  position: absolute;
+  left: 50px;
+  bottom: 150px;
+  mix-blend-mode: overlay;
+}
+
+.instructions-section-triplicate {
+  position: absolute;
+  left: 50px;
+  bottom: 150px;
+  mix-blend-mode: overlay;
+}
+
+.instructions-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.instructions-header-duplicate {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.instructions-header-triplicate {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.info-icon {
+  width: 24px;
+  height: 24px;
+  mix-blend-mode: overlay;
+}
+
+.info-icon-duplicate {
+  mix-blend-mode: overlay;
+}
+
+.info-icon-triplicate {
+  mix-blend-mode: overlay;
+}
+
+.instructions-title {
+  font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 19.2px; /* 24px reduced by 20% */
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  mix-blend-mode: overlay;
+}
+
+.instructions-title-duplicate {
+  mix-blend-mode: overlay;
+}
+
+.instructions-title-triplicate {
+  mix-blend-mode: overlay;
+}
+
+.instructions-text {
+  font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-line;
+  mix-blend-mode: overlay;
+  position: relative;
+}
+
+.instructions-text-duplicate {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  mix-blend-mode: overlay;
+}
+
+.instructions-text-triplicate {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  mix-blend-mode: overlay;
+}
+
+/* ===== DARK MODE SUPPORT FOR INSTRUCTIONS ===== */
+/* Auto-detect dark mode via presence of dark camera icons */
+img.camera-icon-dark ~ .instructions-section,
+img.camera-icon-dark ~ .instructions-section-duplicate,
+img.camera-icon-dark ~ .instructions-section-triplicate {
+  /* Use dark text for light backgrounds in dark mode */
+  color: #000000;
+}
+
+img.camera-icon-dark ~ .instructions-section .instructions-title,
+img.camera-icon-dark ~ .instructions-section-duplicate .instructions-title,
+img.camera-icon-dark ~ .instructions-section-triplicate .instructions-title {
+  color: #000000 !important;
+}
+
+img.camera-icon-dark ~ .instructions-section .instructions-text,
+img.camera-icon-dark ~ .instructions-section-duplicate .instructions-text,
+img.camera-icon-dark ~ .instructions-section-triplicate .instructions-text {
+  color: #000000 !important;
+}
+
+img.camera-icon-dark ~ .instructions-section .info-icon,
+img.camera-icon-dark ~ .instructions-section-duplicate .info-icon,
+img.camera-icon-dark ~ .instructions-section-triplicate .info-icon {
+  filter: invert(1) brightness(0);
+}
+
+/* Alternative: Target via parent body when dark camera icons are visible */
+body:has(img.camera-icon-dark:not([style*="display: none"])) .instructions-section,
+body:has(img.camera-icon-dark:not([style*="display: none"])) .instructions-section-duplicate,
+body:has(img.camera-icon-dark:not([style*="display: none"])) .instructions-section-triplicate {
+  color: #000000;
+}
+
+body:has(img.camera-icon-dark:not([style*="display: none"])) .instructions-title,
+body:has(img.camera-icon-dark:not([style*="display: none"])) .instructions-title-duplicate,
+body:has(img.camera-icon-dark:not([style*="display: none"])) .instructions-title-triplicate {
+  color: #000000 !important;
+}
+
+body:has(img.camera-icon-dark:not([style*="display: none"])) .instructions-text,
+body:has(img.camera-icon-dark:not([style*="display: none"])) .instructions-text-duplicate,
+body:has(img.camera-icon-dark:not([style*="display: none"])) .instructions-text-triplicate {
+  color: #000000 !important;
+}
+
+body:has(img.camera-icon-dark:not([style*="display: none"])) .info-icon,
+body:has(img.camera-icon-dark:not([style*="display: none"])) .info-icon-duplicate,
+body:has(img.camera-icon-dark:not([style*="display: none"])) .info-icon-triplicate {
+  filter: invert(1) brightness(0);
+}
+
+/* ===== HIDE INSTRUCTIONS WHEN MESSAGE INPUT HAS TEXT ===== */
+body.has-message-text .instructions-section,
+body.has-message-text .instructions-section-duplicate,
+body.has-message-text .instructions-section-triplicate {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.inputTab-content.recording-active .inner-shape { rx:4px; ry:4px; }
+.inputTab-content:not(.recording-active) .inner-shape { rx:12px; ry:12px; }
+
+.circle-mid {
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+
+/* Keep circles hidden whenever .shrink class alone is present (idle) */
+.inputTab-content.shrink .circle-outer {
+  transform: scale(0);
+  transition: transform 0.3s ease;
+}
+
+/* ===== Analyze Phase Breathing Animation ===== */
+@keyframes analyzeBreath {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* Apply breathing only during analyzing */
+.inputTab-content.analyzing-active .circle-outer {
+  animation: analyzeBreath 2.2s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+  transition: none;
+  opacity: 1;
+}
+
+/* Author name input */
+.author-input{
+  width:100%;
+  background:transparent;
+  border:none;
+  outline:none;
+  font-family:'SF-Pro',sans-serif;
+  font-size:24px;
+  font-weight:500;
+  color:#000;
+  mix-blend-mode:normal; /* ensure readability */
+  caret-color:#ffffff;
+}
+.author-input::placeholder{color:#000;opacity:0.4;}
+
+/* === Author Name Tab Overrides === */
+.inputTab-content.author .tab-content,
+.inputTab-content.author2 .tab-content{
+  pointer-events:auto;
+}
+
+.author-input{
+  width:100%;
+  background:transparent;
+  border:none;
+  outline:none;
+  font-family:'SF-Pro',sans-serif;
+  font-size:19px; /* match record-state */
+  font-weight:500;
+  color:var(--input-tab-text-color) !important;
+  mix-blend-mode:overlay;
+}
+.author-input::placeholder{color:var(--input-tab-text-color);opacity:0.4;mix-blend-mode:overlay;}
+
+/* --- Custom dual-overlay caret effect --- */
+.author-input{
+  color:var(--input-tab-text-color) !important;
+  caret-color:var(--input-tab-text-color) !important;
+  mix-blend-mode:normal !important;
+  position:relative;
+  filter: brightness(2) contrast(1.5); /* make caret much brighter */
+}
+
+/* Custom caret with dual overlay effect */
+.author-input:focus::after{
+  content:'|';
+  position:absolute;
+  top:0;
+  right:0;
+  width:auto;
+  height:100%;
+  color:var(--input-tab-text-color);
+  mix-blend-mode:normal;
+  animation:caretBlink 1s step-end infinite;
+  pointer-events:none;
+  z-index:1000; /* above all overlay elements */
+  font-size:inherit;
+  line-height:inherit;
+}
+
+.author-input:focus::before{
+  content:'|';
+  position:absolute;
+  top:0;
+  right:-1px; /* slight offset for dual effect */
+  width:auto;
+  height:100%;
+  color:var(--input-tab-text-color);
+  mix-blend-mode:normal;
+  animation:caretBlink 1s step-end infinite;
+  pointer-events:none;
+  z-index:999; /* just below the main caret */
+  font-size:inherit;
+  line-height:inherit;
+}
+
+@keyframes caretBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Message input same base style */
+.message-input{
+  width:100%;
+  background:transparent;
+  border:none;
+  outline:none;
+  font-family:'SF-Pro',sans-serif;
+  font-size:19px;
+  font-weight:500;
+  color:var(--input-tab-text-color) !important;
+  caret-color:var(--input-tab-text-color);
+  mix-blend-mode:normal !important;
+  filter: brightness(2) contrast(1.5);
+}
+
+/* Message textarea style */
+.message-textarea{
+  width:100%;
+  height:auto;
+  min-height:auto;
+  max-height:none;
+  resize:none;
+  padding:0;
+  margin:0;
+  background:transparent;
+  border:none;
+  outline:none;
+  font-family:'SF-Pro',sans-serif;
+  font-size:19px;
+  font-weight:500;
+  line-height:1.2;
+  color:var(--input-tab-text-color) !important;
+  caret-color:var(--input-tab-text-color);
+  mix-blend-mode:normal !important;
+  filter: brightness(2) contrast(1.5);
+  white-space:pre-wrap;
+  overflow-y:hidden;
+  overflow-x:hidden;
+  vertical-align:top;
+  box-sizing:border-box;
+  word-wrap:break-word;
+  word-break:break-word;
+}
+.message-textarea::placeholder{color:var(--input-tab-text-color);opacity:0.4;}
+
+/* Specific styling for message inputTab to maintain fixed positioning */
+#messageInputContent1 {
+  mix-blend-mode: overlay !important; /* restore overlay effect */
+}
+
+#messageInputContent1 .tab-title,
+#messageInputContent1 .message-textarea {
+  mix-blend-mode: overlay !important; /* ensure text blends */
+  color: var(--input-tab-text-color) !important;
+}
+
+/* Apply same styles to second content overlay */
+#messageInputContent2 {
+  mix-blend-mode: overlay !important;
+}
+
+#messageInputContent2 .tab-title,
+#messageInputContent2 .message-textarea {
+  mix-blend-mode: overlay !important;
+  color: var(--input-tab-text-color) !important;
+}
+
+/* Generate space styling for character hover effects */
+.generate-space{ width:8px; display:inline-block; }
+
+
+
+/* Loading Bar Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.visible {
+    display: flex;
+    opacity: 1;
+}
+
+.loading-container {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 30px 40px;
+    text-align: center;
+    backdrop-filter: blur(20px);
+    min-width: 300px;
+}
+
+.loading-title {
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: white;
+    margin-bottom: 20px;
+    mix-blend-mode: overlay;
+}
+
+.loading-bar-container {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 15px 0;
+}
+
+.loading-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #007AFF, #5856D6, #AF52DE);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.loading-text {
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 15px;
+    mix-blend-mode: overlay;
+    min-height: 20px;
+}
+
+/* Share title removed */
+
+
+
+/* ===== INSTRUCTIONS SECTION ===== */
+
+/* ===== ANIMATED LOGO SECTION ===== */
+.animated-logo-container {
+  position: fixed;
+  right: 50px; /* Same distance from right as save buttons */
+  bottom: 50px; /* Position in lower right corner */
+  width: auto; /* Allow for text + logo */
+  height: 47px;
+  z-index: 15;
+  transition: all 0.3s ease-out;
+  display: flex;
+  align-items: flex-end; /* Bottom align text to logo */
+  gap: 8px; /* Space between text and logo */
+  cursor: pointer; /* Show it's clickable */
+  mix-blend-mode: overlay;
+}
+
+.animated-logo {
+  width: 48px;
+  height: 47px;
+  transition: all 0.3s ease-out;
+  flex-shrink: 0; /* Don't shrink the logo */
+  overflow: visible; /* prevent stroke clipping */
+  opacity: 0.6; /* Reduced by 40% */
+}
+
+.crafted-by-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Right-align text */
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateY(-3px); /* Lift text up by 3 pixels */
+}
+
+.crafted-line {
+  font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 8pt;
+  font-weight: 400; /* Regular weight */
+  color: var(--logo-stroke-color);
+  mix-blend-mode: overlay;
+  letter-spacing: 0.05em; /* 5% additional spacing */
+  margin-bottom: 2px; /* More space between lines */
+  opacity: 0.6; /* Reduced by 40% */
+}
+
+.jeremiah-line {
+  font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 9.3pt;
+  font-weight: 800; /* Heavy weight */
+  color: var(--logo-stroke-color);
+  mix-blend-mode: overlay;
+  letter-spacing: 0.05em; /* 5% additional spacing */
+  opacity: 0.6; /* Reduced by 40% */
+}
+
+.logo-path, .logo-stroke {
+  transition: all 0.3s ease-out;
+}
+
+/* Base state - all points have their base transition */
+.logo-stroke {
+  transition: 
+    d 0.15s ease-out,
+    transform 0.15s ease-out;
+  opacity: 1; /* Reduced by 40% */
+}
+
+/* Hover animation - all logo-stroke elements animate when any logo container is hovered */
+.animated-logo-container.logo-hover .logo-stroke {
+  d: path("M17.5639 238.992C7.87781 238.992 0 231.113 0 221.435V42.5569C0 32.87 7.87781 25 17.5639 25H229.444C239.131 25 247 32.8784 247 42.5653V79.4473C247 84.1359 245.175 88.5481 241.86 91.8636L99.8749 233.859C96.5597 237.175 92.1478 239 87.4596 239H17.5639V238.992ZM18.9453 41.1169C17.3881 41.1169 16.1156 42.3895 16.1156 43.9467V211.587C16.1156 213.144 17.3881 214.417 18.9453 214.417H57.4469C59.0041 214.417 60.2766 213.144 60.2766 211.587V43.9384C60.2766 42.3811 59.0041 41.1085 57.4469 41.1085H18.9453V41.1169ZM188.289 41.1169C187.535 41.1169 186.824 41.4099 186.288 41.9457L77.2294 150.921C76.7019 151.448 76.4005 152.177 76.4005 152.922V207.426C76.4005 209.201 77.8489 210.264 79.2553 210.264C80.0004 210.264 80.6869 209.98 81.231 209.427L230.056 60.5743C230.591 60.0385 230.884 59.3268 230.884 58.5733V43.9467C230.884 42.3895 229.612 41.1169 228.055 41.1169H188.289ZM102.989 41.1169C102.236 41.1169 101.524 41.4099 100.988 41.9457L77.221 65.7149C76.6852 66.2508 76.3922 66.9624 76.3922 67.7159V122.17C76.3922 123.945 77.8405 125.008 79.2469 125.008C80.0004 125.008 80.6785 124.724 81.231 124.171L144.764 60.591C145.292 60.0636 145.593 59.3352 145.593 58.59V43.9467C145.593 42.3895 144.321 41.1169 142.763 41.1169H102.998H102.989Z");
+  transform: translateY(-2px);
+}
+
+/* Fallback animation for browsers that don't support 'd' property animation */
+@supports not (d: path("")) {
+  .animated-logo-container.logo-hover .logo-stroke {
+    transform: translateY(-5px) scale(1.02);
+  }
+}
+
+/* ===== INSTRUCTIONS SECTION ===== */
+
+/* All styles are now consistently applied regardless of system preferences */
+
+/* ===============================
+   Wireframe Placeholder Styles for Layout3
+   ===============================*/
+
+/* Big text container styling */
+.big-text-container {
+    min-height: 70px; /* Ensure some height for content */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Container for wireframe placeholder lines */
+.wireframe-placeholder {
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    gap: 12px; /* Reduced from 20px */
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 20px; /* Match layout-main-text padding */
+    min-height: 80px; /* Appropriate height for the layout */
+    box-sizing: border-box;
+}
+
+/* Show wireframe when generating class is applied */
+.layout-main-text.generating .wireframe-placeholder {
+    display: flex;
+}
+
+/* Hide original content when generating */
+.layout-main-text.generating .message {
+    display: none;
+}
+
+/* Wireframe row containers */
+.wireframe-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    align-items: center;
+}
+
+/* Base wireframe line styles */
+.wireframe-line {
+    height: 16px; /* Doubled from 8px */
+    background: #d8d8d8; /* Slightly darker from #e0e0e0 */
+    border-radius: 3px; /* Less rounded corners */
+    opacity: 0.4;
+    animation: wireframe-pulse 1.8s ease-in-out infinite;
+}
+
+/* First row - 4 lines with varied word-like lengths */
+.wireframe-row:first-child .wireframe-line:nth-child(1) {
+    width: 40px; /* Short word like "I", "a", "the" */
+    animation-delay: 0s;
+}
+
+.wireframe-row:first-child .wireframe-line:nth-child(2) {
+    width: 95px; /* Longer word like "amazing", "beautiful" */
+    animation-delay: 0.2s;
+}
+
+.wireframe-row:first-child .wireframe-line:nth-child(3) {
+    width: 50px; /* Short word like "is", "to", "my" */
+    animation-delay: 0.4s;
+}
+
+.wireframe-row:first-child .wireframe-line:nth-child(4) {
+    width: 80px; /* Medium word like "hello", "world" */
+    animation-delay: 0.6s;
+}
+
+/* Second row - 2 semi-short lines */
+.wireframe-row:last-child .wireframe-line:nth-child(1) {
+    width: 120px;
+    animation-delay: 0.8s;
+}
+
+.wireframe-row:last-child .wireframe-line:nth-child(2) {
+    width: 100px;
+    animation-delay: 1s;
+}
+
+/* Pulsing animation for wireframe lines */
+@keyframes wireframe-pulse {
+    0%, 100% {
+        opacity: 0.2;
+        transform: scaleX(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scaleX(1.02);
+    }
+}
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,31 @@
+{
+  "name": "emotional-message-generator",
+  "version": "1.0.0",
+  "description": "A real-time voice-responsive art generator that creates personalized visual cards based on spoken emotions and messages",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "generative-art",
+    "voice-recognition",
+    "emotion-analysis",
+    "web-audio",
+    "canvas",
+    "webgl",
+    "art-generator"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/emotional-message-generator.git"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 

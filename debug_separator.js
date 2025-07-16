@@ -1,0 +1,1 @@
+console.log('Current separator color:', getComputedStyle(document.documentElement).getPropertyValue('--separator-line-color')); console.log('Horizontal separator computed background:', getComputedStyle(document.querySelector('.horizontal-separator')).backgroundColor);

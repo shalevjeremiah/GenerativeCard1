@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Art Generator Test</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .canvas-container {
+            position: relative;
+            margin: 20px;
+            overflow: hidden;
+            width: 468.48px;
+            height: 216.96px;
+            border: 1px solid #333;
+            background: black;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        #artCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            z-index: 1;
+            transition: filter 0.3s ease;
+        }
+        #artCanvas.blur-enabled {
+            filter: blur(var(--blur-amount, 5px));
+        }
+        #displacementCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .controls {
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        input[type="range"] {
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #444;
+        }
+        .emotions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas-container">
+        <canvas id="artCanvas" width="468.48" height="216.96"></canvas>
+        <canvas id="displacementCanvas" width="468.48" height="216.96"></canvas>
+    </div>
+    <div class="controls">
+        <div class="control-group">
+            <label>Recording Length (s):</label>
+            <input type="range" id="recordingLength" min="1" max="5" value="3.6" step="0.1">
+            <span id="recordingLengthValue">3.6</span>
+        </div>
+        <div class="control-group">
+            <label>Word Count:</label>
+            <input type="range" id="wordCount" min="1" max="15" value="9">
+            <span id="wordCountValue">9</span>
+        </div>
+        <div class="control-group">
+            <label>Name:</label>
+            <input type="text" id="name" value="shalev jeremiah">
+        </div>
+        <div class="emotions-grid">
+            <div class="control-group">
+                <label>Joy:</label>
+                <input type="range" id="joy" min="0" max="100" value="0">
+                <span id="joyValue">0</span>
+            </div>
+            <div class="control-group">
+                <label>Sadness:</label>
+                <input type="range" id="sadness" min="0" max="100" value="75">
+                <span id="sadnessValue">0.75</span>
+            </div>
+            <div class="control-group">
+                <label>Anger:</label>
+                <input type="range" id="anger" min="0" max="100" value="0">
+                <span id="angerValue">0</span>
+            </div>
+            <div class="control-group">
+                <label>Fear:</label>
+                <input type="range" id="fear" min="0" max="100" value="30">
+                <span id="fearValue">0.3</span>
+            </div>
+            <div class="control-group">
+                <label>Disgust:</label>
+                <input type="range" id="disgust" min="0" max="100" value="0">
+                <span id="disgustValue">0</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <button id="toggleBlur">Toggle Blur</button>
+            <label>Blur Amount:</label>
+            <input type="range" id="blurAmount" min="0" max="20" value="20" step="0.5">
+            <span id="blurAmountValue">20</span>
+        </div>
+        <button id="generate">Generate Art</button>
+        <button id="testDisplacement">Test Displacement Effect</button>
+        <button id="testHighDisplacement">Test HIGH Displacement</button>
+        <button id="debugStatus">Debug Status</button>
+        <button id="testSimpleWebGL">Test Simple WebGL</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+    <script src="webgl_displacement.js"></script>
+    <script src="glassEffect.js"></script>
+    <script src="artGenerator.js"></script>
+    <script>
+        // Initialize the art generator with canvas size
+        const canvas = document.getElementById('artCanvas');
+        canvas.width = 468.48;  // 390.4 * 1.2
+        canvas.height = 216.96; // 180.8 * 1.2
+        
+        // Create art generator with initial emotion
+        const artGenerator = new ArtGenerator(canvas);
+
+        // Update value displays
+        function updateValue(id) {
+            const input = document.getElementById(id);
+            const display = document.getElementById(id + 'Value');
+            if (id === 'recordingLength' || id === 'blurAmount') {
+                display.textContent = parseFloat(input.value).toFixed(1);
+            } else if (id === 'wordCount') {
+                display.textContent = input.value;
+            } else {
+                display.textContent = (input.value / 100).toFixed(2);
+            }
+        }
+
+        // Add event listeners
+        ['recordingLength', 'wordCount', 'joy', 'sadness', 'anger', 'fear', 'disgust'].forEach(id => {
+            const input = document.getElementById(id);
+            input.addEventListener('input', () => {
+                updateValue(id);
+                document.getElementById('generate').click();
+            });
+        });
+
+        // Generate art button
+        document.getElementById('generate').addEventListener('click', () => {
+            const params = {
+                recordingLength: parseFloat(document.getElementById('recordingLength').value),
+                wordCount: parseInt(document.getElementById('wordCount').value),
+                authorName: document.getElementById('name').value,
+                emotions: {
+                    joy: parseInt(document.getElementById('joy').value) / 100,
+                    sadness: parseInt(document.getElementById('sadness').value) / 100,
+                    anger: parseInt(document.getElementById('anger').value) / 100,
+                    fear: parseInt(document.getElementById('fear').value) / 100,
+                    disgust: parseInt(document.getElementById('disgust').value) / 100
+                },
+                date: new Date()
+            };
+
+            artGenerator.generateArt(params);
+        });
+
+        // Blur controls
+        const blurSlider = document.getElementById('blurAmount');
+        const blurValueDisplay = document.getElementById('blurAmountValue');
+        
+        document.getElementById('toggleBlur').addEventListener('click', () => {
+            console.log('Toggle blur clicked');
+            canvas.classList.toggle('blur-enabled');
+            console.log('Canvas blur classes:', canvas.className);
+            updateBlur();
+        });
+
+        blurSlider.addEventListener('input', () => {
+            updateValue('blurAmount');
+            updateBlur();
+        });
+
+        function updateBlur() {
+            const amount = blurSlider.value;
+            console.log('Updating blur amount to:', amount);
+            canvas.style.setProperty('--blur-amount', `${amount}px`);
+            console.log('Canvas style blur amount:', canvas.style.getPropertyValue('--blur-amount'));
+        }
+
+        // Name input
+        document.getElementById('name').addEventListener('input', () => {
+            document.getElementById('generate').click();
+        });
+
+        // Initial blur setup
+        updateBlur();
+        canvas.classList.add('blur-enabled'); // Enable blur by default
+
+        // Test displacement button
+        document.getElementById('testDisplacement').addEventListener('click', () => {
+            console.log('Manual displacement test triggered');
+            if (artGenerator.glassDisplacementEffect) {
+                console.log('Applying displacement effect manually...');
+                artGenerator.glassDisplacementEffect.apply();
+            } else {
+                console.log('No displacement effect available for manual test');
+            }
+        });
+
+        // Test HIGH displacement button
+        document.getElementById('testHighDisplacement').addEventListener('click', () => {
+            console.log('Manual WebGL displacement test triggered');
+            if (artGenerator.webglDisplacement) {
+                console.log('Testing WebGL displacement with high scale...');
+                if (artGenerator.webglDisplacement.initialized) {
+                    artGenerator.webglDisplacement.apply(artGenerator.canvas, 100); // Very high scale
+                    console.log('WebGL displacement applied manually');
+                } else {
+                    console.log('WebGL displacement not initialized yet');
+                }
+            } else {
+                console.log('No WebGL displacement effect available');
+            }
+                 });
+
+        // Debug status button
+        document.getElementById('debugStatus').addEventListener('click', () => {
+            console.log('=== DEBUG STATUS ===');
+            console.log('Art Generator:', artGenerator);
+            console.log('WebGL Displacement:', artGenerator.webglDisplacement);
+            console.log('Displacement Canvas:', document.getElementById('displacementCanvas'));
+            console.log('Main Canvas:', document.getElementById('artCanvas'));
+            
+            if (artGenerator.webglDisplacement) {
+                console.log('WebGL Displacement Initialized:', artGenerator.webglDisplacement.initialized);
+                console.log('WebGL Context:', artGenerator.webglDisplacement.gl);
+            }
+            
+            // Check if canvases exist and are visible
+            const mainCanvas = document.getElementById('artCanvas');
+            const dispCanvas = document.getElementById('displacementCanvas');
+            
+            if (mainCanvas) {
+                console.log('Main canvas dimensions:', mainCanvas.width, 'x', mainCanvas.height);
+            }
+            
+            if (dispCanvas) {
+                console.log('Displacement canvas dimensions:', dispCanvas.width, 'x', dispCanvas.height);
+                console.log('Displacement canvas style:', dispCanvas.style.cssText);
+            }
+                 });
+
+        // Test simple WebGL rendering
+        document.getElementById('testSimpleWebGL').addEventListener('click', () => {
+            console.log('Testing simple WebGL rendering...');
+            const dispCanvas = document.getElementById('displacementCanvas');
+            const gl = dispCanvas.getContext('webgl');
+            
+            if (gl) {
+                console.log('✅ WebGL context available');
+                gl.clearColor(1.0, 0.0, 0.0, 0.5); // Red with transparency
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                console.log('✅ Red color rendered to displacement canvas');
+            } else {
+                console.error('❌ No WebGL context available');
+            }
+        });
+
+        // Initial generation
+        document.getElementById('generate').click();
+    </script>
+</body>
+</html> 

@@ -1,0 +1,3039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Emotional Message Generator</title>
+  <link rel="icon" type="image/png" href="Assets/favicon.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  
+  <div class="test-controls">
+    <div class="input-group">
+      <input type="text" id="legacyNameInput" placeholder="Enter name" style="display:none;">
+      <input type="text" id="sentenceInput" placeholder="Enter sentence">
+      <button id="recordButton" class="record-button" title="Record voice input">
+        <i class="fas fa-microphone"></i>
+      </button>
+      <button id="analyzeSentenceBtn">Analyze</button>
+    </div>
+    <div id="recordingStatus" class="recording-status"></div>
+    <div id="contentWarning" class="content-warning"></div>
+    <div id="loadingIndicator" class="loading-indicator" style="display: none;">Analyzing...</div>
+  </div>
+      <div class="card-wrapper">
+      <div class="card">
+      <div class="layout-image">
+        <!-- Dynamic art generator canvas -->
+        <div class="canvas-container">
+          <canvas id="artCanvas" width="468.48" height="216.96"></canvas>
+          <canvas id="displacementCanvas" width="468.48" height="216.96"></canvas>
+          <!-- Hidden equalizer canvas for displacement (optional) -->
+          <canvas id="equalizerCanvas" width="468.48" height="216.96"></canvas>
+          <!-- Brightness overlay layer that sits above all art elements -->
+          <div class="brightness-overlay" id="brightnessOverlay"></div>
+          <!-- Invisible overlay to capture hover events -->
+          <div class="hover-overlay" id="hoverOverlay"></div>
+        </div>
+        <!-- Hidden image element kept for legacy JS compatibility -->
+        <img alt="Main Image Blurred" class="main-image" style="display:none;">
+      </div>
+      
+      <div class="sliding-content">
+        <div class="layout-info-top">
+          <div class="info-left">
+            <div class="text-box">
+              <h3>Words</h3>
+              <p id="wordCount">0</p>
+            </div>
+            <div class="text-box">
+              <h3>Tone</h3>
+              <p id="toneType">Not Recognized</p>
+            </div>
+          </div>
+          <div class="info-right">
+            <img src="test_waves.png" alt="Audio Waves" class="waves-image">
+          </div>
+        </div>
+        
+        <div class="layout-main-text">
+          <div class="message" id="analyzedMessageOutput">
+            <!-- Text will be populated by JavaScript after analysis -->
+          </div>
+          
+          <!-- Wireframe placeholder for loading state -->
+          <div class="wireframe-placeholder">
+            <div class="wireframe-row">
+              <div class="wireframe-line"></div>
+              <div class="wireframe-line"></div>
+              <div class="wireframe-line"></div>
+              <div class="wireframe-line"></div>
+            </div>
+            <div class="wireframe-row">
+              <div class="wireframe-line"></div>
+              <div class="wireframe-line"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="layout-info-bottom">
+        <div class="text-box">
+          <h3>Made by</h3>
+          <p id="madeByName">None</p>
+        </div>
+        <div class="arrow-container">
+          <div class="arrow"></div>
+        </div>
+        <div class="text-box">
+          <h3>Date</h3>
+          <p>27/5/25</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Duplicate Record Message InputTab (upper) -->
+    <div class="inputTab" style="bottom:456px;height:85px;" id="authorTabBg"></div>
+    <div class="inputTab-content author" style="bottom:456px;height:85px;" id="authorTabContent1">
+      <h4 class="tab-title">AUTHOR'S FULL NAME</h4>
+      <div class="tab-content">
+        <input type="text" id="userNameInput" class="author-input" placeholder="Enter Full Name" />
+      </div>
+      <!-- No recording controls for author name tab -->
+    </div>
+    <div class="inputTab-content author2" style="bottom:456px;height:85px;" id="authorTabContent2">
+      <h4 class="tab-title">AUTHOR'S FULL NAME</h4>
+      <div class="tab-content">
+        <input type="text" class="author-input" placeholder="Enter Full Name" />
+      </div>
+      <!-- No recording controls for author name tab -->
+    </div>
+    <div class="inputTab-border" style="bottom:456px;height:85px;" id="authorTabBorder"></div>
+
+    <!-- Test 3 Style Box - Background only -->
+    <div class="inputTab" style="bottom:300px;" id="recordTabBg"></div>
+
+    <!-- Test 3 Content layers -->
+    <div class="inputTab-content recording" style="bottom:300px;" id="recordTabContent1">
+      <h4 class="tab-title">RECORD MESSAGE</h4>
+      <div class="tab-content">
+        <div class="record-state">Start Recording</div>
+        <div class="record-info">
+          <span class="record-timer">0:00</span>
+        </div>
+      </div>
+      <svg class="inputTab-circles" viewBox="0 0 350 150" width="350" height="150" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle class="circle-mid" cx="280" cy="75" r="28" stroke="#fff" stroke-width="6" stroke-opacity="0.85" fill="none"/>
+        <circle class="circle-outer" cx="280" cy="75" r="44" stroke="#fff" stroke-width="3" stroke-opacity="0.5" fill="none"/>
+        <circle class="circle-outer" cx="280" cy="75" r="62" stroke="#fff" stroke-width="2" stroke-opacity="0.25" fill="none"/>
+        <circle class="circle-outer" cx="280" cy="75" r="80" stroke="#fff" stroke-width="1" stroke-opacity="0.15" fill="none"/>
+        <rect class="inner-shape" x="268" y="63" width="24" height="24" rx="12" ry="12" fill="#fff" style="pointer-events:all;cursor:pointer;"/>
+      </svg>
+    </div>
+
+    <div class="inputTab-content recording2" style="bottom:300px;" id="recordTabContent2">
+      <h4 class="tab-title">RECORD MESSAGE</h4>
+      <div class="tab-content">
+        <div class="record-state">Start Recording</div>
+        <div class="record-info">
+          <span class="record-timer">0:00</span>
+        </div>
+      </div>
+      <svg class="inputTab-circles" viewBox="0 0 350 150" width="350" height="150" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle class="circle-mid" cx="280" cy="75" r="28" stroke="#fff" stroke-width="6" stroke-opacity="0.85" fill="none"/>
+        <circle class="circle-outer" cx="280" cy="75" r="44" stroke="#fff" stroke-width="3" stroke-opacity="0.5" fill="none"/>
+        <circle class="circle-outer" cx="280" cy="75" r="62" stroke="#fff" stroke-width="2" stroke-opacity="0.25" fill="none"/>
+        <circle class="circle-outer" cx="280" cy="75" r="80" stroke="#fff" stroke-width="1" stroke-opacity="0.15" fill="none"/>
+        <rect class="inner-shape" x="268" y="63" width="24" height="24" rx="12" ry="12" fill="#fff" style="pointer-events:all;cursor:pointer;"/>
+      </svg>
+    </div>
+
+    <!-- Test 3 Box Border -->
+    <div class="inputTab-border" style="bottom:300px;" id="recordTabBorder"></div>
+
+    <!-- Duplicate Author Tab (bottom) -->
+    <div class="inputTab" id="messageInputBg" style="bottom:auto;"></div>
+    <div class="inputTab-content author" id="messageInputContent1" style="bottom:auto;">
+      <h4 class="tab-title">TYPE MESSAGE (OPTIONAL)</h4>
+      <div class="tab-content">
+        <textarea class="message-textarea" rows="1" placeholder="Enter Message"></textarea>
+      </div>
+      <!-- No recording controls for duplicate author tab -->
+    </div>
+    <div class="inputTab-content author2" id="messageInputContent2" style="bottom:auto;">
+      <h4 class="tab-title">TYPE MESSAGE (OPTIONAL)</h4>
+      <div class="tab-content">
+        <textarea class="message-textarea" rows="1" placeholder="Enter Message"></textarea>
+      </div>
+    </div>
+    <div class="inputTab-border" id="messageInputBorder" style="bottom:auto;"></div>
+
+
+
+  </div> <!-- /.card-wrapper -->
+
+  <!-- Edit title above inputTabs -->
+  <div class="edit-title">Edit</div>
+  <div class="edit-title-2">Edit</div>
+  <!-- Preview and Share titles -->
+  <div class="preview-title">Preview</div>
+  <div class="preview-title-2">Preview</div>
+  <div class="share-title">Share</div>
+  <div class="share-title-2">Share</div>
+
+  <!-- Vertical line separators -->
+  <div class="inputTab-separator"></div>
+  <div class="inputTab-separator-2"></div>
+  
+  <!-- Right side vertical line separators -->
+  <div class="inputTab-separator-right"></div>
+  <div class="inputTab-separator-right-2"></div>
+  
+  <!-- Right side Independent InputTab -->
+  <div class="inputTab inputTab-right" style="bottom:456px;height:210px;" id="rightTabBg"></div>
+  <div class="inputTab-content rightTab inputTab-right" style="bottom:456px;height:210px;" id="rightTabContent1">
+    <div class="right-panel-content">
+      <svg class="camera-icon" width="62" height="50" viewBox="0 0 62 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <mask id="path-1-inside-1_189_13" fill="white">
+          <path d="M48.4863 7.94824H54.25C58.53 7.94824 61.9997 11.4183 62 15.6982V41.5322C61.9999 45.8124 58.5302 49.2822 54.25 49.2822H7.75C3.46985 49.2822 9.55547e-05 45.8124 0 41.5322V15.6982C0.000253056 11.4183 3.46995 7.94824 7.75 7.94824H14.3086L19.0771 0H43.7188L48.4863 7.94824Z"/>
+        </mask>
+        <path d="M48.4863 7.94824L47.6288 8.46263L47.9201 8.94824H48.4863V7.94824ZM62 15.6982L63 15.6982L63 15.6982L62 15.6982ZM62 41.5322L63 41.5322V41.5322H62ZM0 41.5322L-1 41.5322L-1 41.5322L0 41.5322ZM0 15.6982L-1 15.6982V15.6982H0ZM14.3086 7.94824V8.94824H14.8748L15.1661 8.46271L14.3086 7.94824ZM19.0771 0V-1H18.5109L18.2196 -0.514465L19.0771 0ZM43.7188 0L44.5763 -0.514387L44.285 -1H43.7188V0ZM48.4863 7.94824V8.94824H54.25V7.94824V6.94824H48.4863V7.94824ZM54.25 7.94824V8.94824C57.9777 8.94824 60.9998 11.9705 61 15.6983L62 15.6982L63 15.6982C62.9997 10.866 59.0824 6.94824 54.25 6.94824V7.94824ZM62 15.6982H61V41.5322H62H63V15.6982H62ZM62 41.5322L61 41.5322C60.9999 45.2601 57.9778 48.2822 54.25 48.2822V49.2822V50.2822C59.0825 50.2822 62.9999 46.3646 63 41.5322L62 41.5322ZM54.25 49.2822V48.2822H7.75V49.2822V50.2822H54.25V49.2822ZM7.75 49.2822V48.2822C4.02216 48.2822 1.00008 45.2601 1 41.5322L0 41.5322L-1 41.5322C-0.999892 46.3646 2.91755 50.2822 7.75 50.2822V49.2822ZM0 41.5322H1V15.6982H0H-1V41.5322H0ZM0 15.6982L1 15.6983C1.00022 11.9705 4.02229 8.94824 7.75 8.94824V7.94824V6.94824C2.91761 6.94824 -0.999714 10.866 -1 15.6982L0 15.6982ZM7.75 7.94824V8.94824H14.3086V7.94824V6.94824H7.75V7.94824ZM14.3086 7.94824L15.1661 8.46271L19.9347 0.514465L19.0771 0L18.2196 -0.514465L13.4511 7.43378L14.3086 7.94824ZM19.0771 0V1H43.7188V0V-1H19.0771V0ZM43.7188 0L42.8612 0.514387L47.6288 8.46263L48.4863 7.94824L49.3439 7.43385L44.5763 -0.514387L43.7188 0Z" fill="var(--input-tab-text-color)" mask="url(#path-1-inside-1_189_13)"/>
+        <circle cx="31" cy="28.5" r="8" stroke="var(--input-tab-text-color)" stroke-width="1" fill="none" mix-blend-mode="overlay"/>
+      </svg>
+      <h4 class="tab-title right-panel-title" data-text="SAVE IMAGE">SAVE IMAGE</h4>
+    </div>
+    <div class="right-panel-content right-panel-duplicate">
+      <svg class="camera-icon camera-icon-duplicate" width="62" height="50" viewBox="0 0 62 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <mask id="path-1-dup-inside-1_189_13" fill="white">
+          <path d="M48.4863 7.94824H54.25C58.53 7.94824 61.9997 11.4183 62 15.6982V41.5322C61.9999 45.8124 58.5302 49.2822 54.25 49.2822H7.75C3.46985 49.2822 9.55547e-05 45.8124 0 41.5322V15.6982C0.000253056 11.4183 3.46995 7.94824 7.75 7.94824H14.3086L19.0771 0H43.7188L48.4863 7.94824Z"/>
+        </mask>
+        <path d="M48.4863 7.94824L47.6288 8.46263L47.9201 8.94824H48.4863V7.94824ZM62 15.6982L63 15.6982L63 15.6982L62 15.6982ZM62 41.5322L63 41.5322V41.5322H62ZM0 41.5322L-1 41.5322L-1 41.5322L0 41.5322ZM0 15.6982L-1 15.6982V15.6982H0ZM14.3086 7.94824V8.94824H14.8748L15.1661 8.46271L14.3086 7.94824ZM19.0771 0V-1H18.5109L18.2196 -0.514465L19.0771 0ZM43.7188 0L44.5763 -0.514387L44.285 -1H43.7188V0ZM48.4863 7.94824V8.94824H54.25V7.94824V6.94824H48.4863V7.94824ZM54.25 7.94824V8.94824C57.9777 8.94824 60.9998 11.9705 61 15.6983L62 15.6982L63 15.6982C62.9997 10.866 59.0824 6.94824 54.25 6.94824V7.94824ZM62 15.6982H61V41.5322H62H63V15.6982H62ZM62 41.5322L61 41.5322C60.9999 45.2601 57.9778 48.2822 54.25 48.2822V49.2822V50.2822C59.0825 50.2822 62.9999 46.3646 63 41.5322L62 41.5322ZM54.25 49.2822V48.2822H7.75V49.2822V50.2822H54.25V49.2822ZM7.75 49.2822V48.2822C4.02216 48.2822 1.00008 45.2601 1 41.5322L0 41.5322L-1 41.5322C-0.999892 46.3646 2.91755 50.2822 7.75 50.2822V49.2822ZM0 41.5322H1V15.6982H0H-1V41.5322H0ZM0 15.6982L1 15.6983C1.00022 11.9705 4.02229 8.94824 7.75 8.94824V7.94824V6.94824C2.91761 6.94824 -0.999714 10.866 -1 15.6982L0 15.6982ZM7.75 7.94824V8.94824H14.3086V7.94824V6.94824H7.75V7.94824ZM14.3086 7.94824L15.1661 8.46271L19.9347 0.514465L19.0771 0L18.2196 -0.514465L13.4511 7.43378L14.3086 7.94824ZM19.0771 0V1H43.7188V0V-1H19.0771V0ZM43.7188 0L42.8612 0.514387L47.6288 8.46263L48.4863 7.94824L49.3439 7.43385L44.5763 -0.514387L43.7188 0Z" fill="var(--input-tab-text-color)" mask="url(#path-1-dup-inside-1_189_13)"/>
+        <circle cx="31" cy="28.5" r="8" stroke="var(--input-tab-text-color)" stroke-width="1" fill="none" mix-blend-mode="overlay"/>
+      </svg>
+      <h4 class="tab-title right-panel-title right-panel-title-duplicate" data-text="SAVE IMAGE">SAVE IMAGE</h4>
+    </div>
+    <div class="tab-content">
+      <!-- No input field - empty content area -->
+    </div>
+  </div>
+  <div class="inputTab-content rightTab2 inputTab-right" style="bottom:456px;height:210px;" id="rightTabContent2">
+    <div class="right-panel-content">
+      <svg class="camera-icon" width="62" height="50" viewBox="0 0 62 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <mask id="path-2-inside-2_189_13" fill="white">
+          <path d="M48.4863 7.94824H54.25C58.53 7.94824 61.9997 11.4183 62 15.6982V41.5322C61.9999 45.8124 58.5302 49.2822 54.25 49.2822H7.75C3.46985 49.2822 9.55547e-05 45.8124 0 41.5322V15.6982C0.000253056 11.4183 3.46995 7.94824 7.75 7.94824H14.3086L19.0771 0H43.7188L48.4863 7.94824Z"/>
+        </mask>
+        <path d="M48.4863 7.94824L47.6288 8.46263L47.9201 8.94824H48.4863V7.94824ZM62 15.6982L63 15.6982L63 15.6982L62 15.6982ZM62 41.5322L63 41.5322V41.5322H62ZM0 41.5322L-1 41.5322L-1 41.5322L0 41.5322ZM0 15.6982L-1 15.6982V15.6982H0ZM14.3086 7.94824V8.94824H14.8748L15.1661 8.46271L14.3086 7.94824ZM19.0771 0V-1H18.5109L18.2196 -0.514465L19.0771 0ZM43.7188 0L44.5763 -0.514387L44.285 -1H43.7188V0ZM48.4863 7.94824V8.94824H54.25V7.94824V6.94824H48.4863V7.94824ZM54.25 7.94824V8.94824C57.9777 8.94824 60.9998 11.9705 61 15.6983L62 15.6982L63 15.6982C62.9997 10.866 59.0824 6.94824 54.25 6.94824V7.94824ZM62 15.6982H61V41.5322H62H63V15.6982H62ZM62 41.5322L61 41.5322C60.9999 45.2601 57.9778 48.2822 54.25 48.2822V49.2822V50.2822C59.0825 50.2822 62.9999 46.3646 63 41.5322L62 41.5322ZM54.25 49.2822V48.2822H7.75V49.2822V50.2822H54.25V49.2822ZM7.75 49.2822V48.2822C4.02216 48.2822 1.00008 45.2601 1 41.5322L0 41.5322L-1 41.5322C-0.999892 46.3646 2.91755 50.2822 7.75 50.2822V49.2822ZM0 41.5322H1V15.6982H0H-1V41.5322H0ZM0 15.6982L1 15.6983C1.00022 11.9705 4.02229 8.94824 7.75 8.94824V7.94824V6.94824C2.91761 6.94824 -0.999714 10.866 -1 15.6982L0 15.6982ZM7.75 7.94824V8.94824H14.3086V7.94824V6.94824H7.75V7.94824ZM14.3086 7.94824L15.1661 8.46271L19.9347 0.514465L19.0771 0L18.2196 -0.514465L13.4511 7.43378L14.3086 7.94824ZM19.0771 0V1H43.7188V0V-1H19.0771V0ZM43.7188 0L42.8612 0.514387L47.6288 8.46263L48.4863 7.94824L49.3439 7.43385L44.5763 -0.514387L43.7188 0Z" fill="var(--input-tab-text-color)" mask="url(#path-2-inside-2_189_13)"/>
+        <circle cx="31" cy="28.5" r="8" stroke="var(--input-tab-text-color)" stroke-width="1" fill="none" mix-blend-mode="overlay"/>
+      </svg>
+      <h4 class="tab-title right-panel-title" data-text="SAVE IMAGE">SAVE IMAGE</h4>
+    </div>
+    <div class="right-panel-content right-panel-duplicate">
+      <svg class="camera-icon camera-icon-duplicate" width="62" height="50" viewBox="0 0 62 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <mask id="path-2-dup-inside-2_189_13" fill="white">
+          <path d="M48.4863 7.94824H54.25C58.53 7.94824 61.9997 11.4183 62 15.6982V41.5322C61.9999 45.8124 58.5302 49.2822 54.25 49.2822H7.75C3.46985 49.2822 9.55547e-05 45.8124 0 41.5322V15.6982C0.000253056 11.4183 3.46995 7.94824 7.75 7.94824H14.3086L19.0771 0H43.7188L48.4863 7.94824Z"/>
+        </mask>
+        <path d="M48.4863 7.94824L47.6288 8.46263L47.9201 8.94824H48.4863V7.94824ZM62 15.6982L63 15.6982L63 15.6982L62 15.6982ZM62 41.5322L63 41.5322V41.5322H62ZM0 41.5322L-1 41.5322L-1 41.5322L0 41.5322ZM0 15.6982L-1 15.6982V15.6982H0ZM14.3086 7.94824V8.94824H14.8748L15.1661 8.46271L14.3086 7.94824ZM19.0771 0V-1H18.5109L18.2196 -0.514465L19.0771 0ZM43.7188 0L44.5763 -0.514387L44.285 -1H43.7188V0ZM48.4863 7.94824V8.94824H54.25V7.94824V6.94824H48.4863V7.94824ZM54.25 7.94824V8.94824C57.9777 8.94824 60.9998 11.9705 61 15.6983L62 15.6982L63 15.6982C62.9997 10.866 59.0824 6.94824 54.25 6.94824V7.94824ZM62 15.6982H61V41.5322H62H63V15.6982H62ZM62 41.5322L61 41.5322C60.9999 45.2601 57.9778 48.2822 54.25 48.2822V49.2822V50.2822C59.0825 50.2822 62.9999 46.3646 63 41.5322L62 41.5322ZM54.25 49.2822V48.2822H7.75V49.2822V50.2822H54.25V49.2822ZM7.75 49.2822V48.2822C4.02216 48.2822 1.00008 45.2601 1 41.5322L0 41.5322L-1 41.5322C-0.999892 46.3646 2.91755 50.2822 7.75 50.2822V49.2822ZM0 41.5322H1V15.6982H0H-1V41.5322H0ZM0 15.6982L1 15.6983C1.00022 11.9705 4.02229 8.94824 7.75 8.94824V7.94824V6.94824C2.91761 6.94824 -0.999714 10.866 -1 15.6982L0 15.6982ZM7.75 7.94824V8.94824H14.3086V7.94824V6.94824H7.75V7.94824ZM14.3086 7.94824L15.1661 8.46271L19.9347 0.514465L19.0771 0L18.2196 -0.514465L13.4511 7.43378L14.3086 7.94824ZM19.0771 0V1H43.7188V0V-1H19.0771V0ZM43.7188 0L42.8612 0.514387L47.6288 8.46263L48.4863 7.94824L49.3439 7.43385L44.5763 -0.514387L43.7188 0Z" fill="var(--input-tab-text-color)" mask="url(#path-2-dup-inside-2_189_13)"/>
+        <circle cx="31" cy="28.5" r="8" stroke="var(--input-tab-text-color)" stroke-width="1" fill="none" mix-blend-mode="overlay"/>
+      </svg>
+      <h4 class="tab-title right-panel-title right-panel-title-duplicate" data-text="SAVE IMAGE">SAVE IMAGE</h4>
+    </div>
+    <div class="tab-content">
+      <!-- No input field - empty content area -->
+    </div>
+    <!-- Loading bar for first Save Clip button -->
+  </div>
+  <div class="inputTab-border inputTab-right" style="bottom:456px;height:210px;" id="rightTabBorder"></div>
+
+  <!-- Second SAVE IMAGE button positioned below the first one -->
+  <div class="inputTab inputTab-right" style="bottom:226px;height:210px;" id="rightTabBg2"></div>
+  <div class="inputTab-content rightTab3 inputTab-right" style="bottom:226px;height:210px;" id="rightTabContent3">
+    <div class="right-panel-content">
+      <svg class="record-icon" width="79" height="42" viewBox="0 0 79 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M54.25 0L54.6484 0.00976562C54.9098 0.0230029 55.1679 0.0484001 55.4219 0.0869141C55.4756 0.0950564 55.5287 0.105996 55.582 0.115234C55.6509 0.127176 55.7198 0.138595 55.7881 0.152344C55.8349 0.161772 55.8812 0.173325 55.9277 0.183594C56.0115 0.202091 56.095 0.221002 56.1777 0.242188C56.2045 0.249047 56.2311 0.256534 56.2578 0.263672C56.3476 0.287698 56.4369 0.312703 56.5254 0.339844C56.5664 0.352413 56.6068 0.366655 56.6475 0.379883C56.7333 0.40779 56.8188 0.436004 56.9033 0.466797C56.9249 0.474667 56.9463 0.483155 56.9678 0.491211C57.0591 0.525421 57.1496 0.561113 57.2393 0.598633C57.2786 0.615082 57.3175 0.632339 57.3564 0.649414C57.4289 0.681148 57.501 0.713205 57.5723 0.74707C57.6239 0.771589 57.6746 0.797624 57.7256 0.823242C57.7818 0.851523 57.8381 0.87958 57.8936 0.90918C57.9439 0.936029 57.9933 0.964268 58.043 0.992188C58.1052 1.02718 58.1674 1.06199 58.2285 1.09863C58.2699 1.12345 58.3107 1.14924 58.3516 1.1748C58.4109 1.21193 58.47 1.24941 58.5283 1.28809C58.5764 1.31995 58.6236 1.35284 58.6709 1.38574C58.7261 1.42416 58.7808 1.46313 58.835 1.50293C58.8736 1.53132 58.9121 1.55978 58.9502 1.58887C59.0082 1.63322 59.0653 1.67867 59.1221 1.72461C59.1704 1.76376 59.2182 1.80347 59.2656 1.84375C59.3105 1.88187 59.3545 1.92085 59.3984 1.95996C59.4398 1.99674 59.4809 2.03364 59.5215 2.07129C59.5708 2.11706 59.6199 2.16294 59.668 2.20996C59.7119 2.25294 59.7549 2.29681 59.7979 2.34082C59.8419 2.38599 59.8858 2.4313 59.9287 2.47754C59.9631 2.51452 59.9966 2.55219 60.0303 2.58984C60.0785 2.64388 60.1261 2.69852 60.1729 2.75391C60.204 2.79082 60.2351 2.82774 60.2656 2.86523C60.318 2.92965 60.3686 2.99542 60.4189 3.06152C60.4439 3.09426 60.4688 3.12701 60.4932 3.16016C60.5333 3.21463 60.5726 3.26965 60.6113 3.3252C60.6449 3.37341 60.6784 3.4217 60.7109 3.4707C60.7483 3.52704 60.7844 3.58424 60.8203 3.6416C60.8513 3.69112 60.8822 3.74075 60.9121 3.79102C60.9428 3.84262 60.9724 3.8949 61.002 3.94727C61.0304 3.99763 61.0596 4.04758 61.0869 4.09863C61.1245 4.16879 61.1599 4.2401 61.1953 4.31152C61.2135 4.34829 61.2323 4.38478 61.25 4.42188C61.2816 4.48824 61.3111 4.55565 61.3408 4.62305C61.3629 4.67302 61.3852 4.72291 61.4062 4.77344C61.4327 4.83705 61.4576 4.90136 61.4824 4.96582C61.5021 5.01683 61.5224 5.06761 61.541 5.11914C61.5682 5.19437 61.5933 5.27039 61.6182 5.34668C61.6312 5.38668 61.6448 5.42651 61.6572 5.4668C61.682 5.54713 61.7034 5.62854 61.7256 5.70996C61.7374 5.75328 61.7507 5.79623 61.7617 5.83984C61.7805 5.91388 61.7969 5.98861 61.8135 6.06348C61.824 6.11067 61.8361 6.15756 61.8457 6.20508C61.8581 6.26624 61.868 6.32797 61.8789 6.38965C61.8911 6.45875 61.9037 6.52793 61.9141 6.59766C61.9379 6.75724 61.9558 6.91845 61.9697 7.08105C61.9886 7.30158 62 7.52459 62 7.75V15.8037L78.5 6.27734V35.7227L62 26.1953V33.583C62 37.8632 58.5302 41.333 54.25 41.333H7.75C3.46979 41.333 0 37.8632 0 33.583V7.75C0 3.46979 3.46979 0 7.75 0H54.25ZM7.75 1C4.02208 1 1 4.02208 1 7.75V33.583C1 37.3109 4.02208 40.333 7.75 40.333H54.25C57.9779 40.333 61 37.3109 61 33.583V7.75C61 7.52189 60.9879 7.29651 60.9658 7.07422C60.9389 6.80345 60.8949 6.53773 60.8369 6.27734C60.7981 6.10316 60.7531 5.93152 60.7012 5.7627C59.9808 3.4216 58.0229 1.62277 55.5898 1.13281C55.3996 1.09451 55.2064 1.06589 55.0107 1.04395C54.9847 1.04102 54.9588 1.0368 54.9326 1.03418C54.7081 1.01164 54.4804 1 54.25 1H7.75ZM62.5 16.6699L62 16.958V25.04L62.5 25.3291L77.5 33.9902V8.00879L62.5 16.6699Z" fill="var(--input-tab-text-color)" />
+        <circle cx="15" cy="20" r="3" fill="var(--input-tab-text-color)" style="mix-blend-mode: overlay;" />
+      </svg>
+      <h4 class="tab-title right-panel-title" data-text="SAVE CLIP">SAVE CLIP</h4>
+    </div>
+    <div class="right-panel-content right-panel-duplicate">
+      <svg class="record-icon record-icon-duplicate" width="79" height="42" viewBox="0 0 79 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M54.25 0L54.6484 0.00976562C54.9098 0.0230029 55.1679 0.0484001 55.4219 0.0869141C55.4756 0.0950564 55.5287 0.105996 55.582 0.115234C55.6509 0.127176 55.7198 0.138595 55.7881 0.152344C55.8349 0.161772 55.8812 0.173325 55.9277 0.183594C56.0115 0.202091 56.095 0.221002 56.1777 0.242188C56.2045 0.249047 56.2311 0.256534 56.2578 0.263672C56.3476 0.287698 56.4369 0.312703 56.5254 0.339844C56.5664 0.352413 56.6068 0.366655 56.6475 0.379883C56.7333 0.40779 56.8188 0.436004 56.9033 0.466797C56.9249 0.474667 56.9463 0.483155 56.9678 0.491211C57.0591 0.525421 57.1496 0.561113 57.2393 0.598633C57.2786 0.615082 57.3175 0.632339 57.3564 0.649414C57.4289 0.681148 57.501 0.713205 57.5723 0.74707C57.6239 0.771589 57.6746 0.797624 57.7256 0.823242C57.7818 0.851523 57.8381 0.87958 57.8936 0.90918C57.9439 0.936029 57.9933 0.964268 58.043 0.992188C58.1052 1.02718 58.1674 1.06199 58.2285 1.09863C58.2699 1.12345 58.3107 1.14924 58.3516 1.1748C58.4109 1.21193 58.47 1.24941 58.5283 1.28809C58.5764 1.31995 58.6236 1.35284 58.6709 1.38574C58.7261 1.42416 58.7808 1.46313 58.835 1.50293C58.8736 1.53132 58.9121 1.55978 58.9502 1.58887C59.0082 1.63322 59.0653 1.67867 59.1221 1.72461C59.1704 1.76376 59.2182 1.80347 59.2656 1.84375C59.3105 1.88187 59.3545 1.92085 59.3984 1.95996C59.4398 1.99674 59.4809 2.03364 59.5215 2.07129C59.5708 2.11706 59.6199 2.16294 59.668 2.20996C59.7119 2.25294 59.7549 2.29681 59.7979 2.34082C59.8419 2.38599 59.8858 2.4313 59.9287 2.47754C59.9631 2.51452 59.9966 2.55219 60.0303 2.58984C60.0785 2.64388 60.1261 2.69852 60.1729 2.75391C60.204 2.79082 60.2351 2.82774 60.2656 2.86523C60.318 2.92965 60.3686 2.99542 60.4189 3.06152C60.4439 3.09426 60.4688 3.12701 60.4932 3.16016C60.5333 3.21463 60.5726 3.26965 60.6113 3.3252C60.6449 3.37341 60.6784 3.4217 60.7109 3.4707C60.7483 3.52704 60.7844 3.58424 60.8203 3.6416C60.8513 3.69112 60.8822 3.74075 60.9121 3.79102C60.9428 3.84262 60.9724 3.8949 61.002 3.94727C61.0304 3.99763 61.0596 4.04758 61.0869 4.09863C61.1245 4.16879 61.1599 4.2401 61.1953 4.31152C61.2135 4.34829 61.2323 4.38478 61.25 4.42188C61.2816 4.48824 61.3111 4.55565 61.3408 4.62305C61.3629 4.67302 61.3852 4.72291 61.4062 4.77344C61.4327 4.83705 61.4576 4.90136 61.4824 4.96582C61.5021 5.01683 61.5224 5.06761 61.541 5.11914C61.5682 5.19437 61.5933 5.27039 61.6182 5.34668C61.6312 5.38668 61.6448 5.42651 61.6572 5.4668C61.682 5.54713 61.7034 5.62854 61.7256 5.70996C61.7374 5.75328 61.7507 5.79623 61.7617 5.83984C61.7805 5.91388 61.7969 5.98861 61.8135 6.06348C61.824 6.11067 61.8361 6.15756 61.8457 6.20508C61.8581 6.26624 61.868 6.32797 61.8789 6.38965C61.8911 6.45875 61.9037 6.52793 61.9141 6.59766C61.9379 6.75724 61.9558 6.91845 61.9697 7.08105C61.9886 7.30158 62 7.52459 62 7.75V15.8037L78.5 6.27734V35.7227L62 26.1953V33.583C62 37.8632 58.5302 41.333 54.25 41.333H7.75C3.46979 41.333 0 37.8632 0 33.583V7.75C0 3.46979 3.46979 0 7.75 0H54.25ZM7.75 1C4.02208 1 1 4.02208 1 7.75V33.583C1 37.3109 4.02208 40.333 7.75 40.333H54.25C57.9779 40.333 61 37.3109 61 33.583V7.75C61 7.52189 60.9879 7.29651 60.9658 7.07422C60.9389 6.80345 60.8949 6.53773 60.8369 6.27734C60.7981 6.10316 60.7531 5.93152 60.7012 5.7627C59.9808 3.4216 58.0229 1.62277 55.5898 1.13281C55.3996 1.09451 55.2064 1.06589 55.0107 1.04395C54.9847 1.04102 54.9588 1.0368 54.9326 1.03418C54.7081 1.01164 54.4804 1 54.25 1H7.75ZM62.5 16.6699L62 16.958V25.04L62.5 25.3291L77.5 33.9902V8.00879L62.5 16.6699Z" fill="var(--input-tab-text-color)" />
+        <circle cx="15" cy="20" r="3" fill="var(--input-tab-text-color)" style="mix-blend-mode: overlay;" />
+      </svg>
+      <h4 class="tab-title right-panel-title right-panel-title-duplicate" data-text="SAVE CLIP">SAVE CLIP</h4>
+    </div>
+    <div class="tab-content">
+      <!-- No input field - empty content area -->
+    </div>
+    <!-- Loading bar for first Save Clip button -->
+    <div class="save-clip-loading-bar" id="saveClipLoadingBar1">
+      <div class="loading-bar-background"></div>
+      <div class="loading-bar-fill"></div>
+      <div class="loading-bar-text">Processing...</div>
+    </div>
+  </div>
+  <div class="inputTab-content rightTab4 inputTab-right" style="bottom:226px;height:210px;" id="rightTabContent4">
+    <div class="right-panel-content">
+      <svg class="record-icon" width="79" height="42" viewBox="0 0 79 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M54.25 0L54.6484 0.00976562C54.9098 0.0230029 55.1679 0.0484001 55.4219 0.0869141C55.4756 0.0950564 55.5287 0.105996 55.582 0.115234C55.6509 0.127176 55.7198 0.138595 55.7881 0.152344C55.8349 0.161772 55.8812 0.173325 55.9277 0.183594C56.0115 0.202091 56.095 0.221002 56.1777 0.242188C56.2045 0.249047 56.2311 0.256534 56.2578 0.263672C56.3476 0.287698 56.4369 0.312703 56.5254 0.339844C56.5664 0.352413 56.6068 0.366655 56.6475 0.379883C56.7333 0.40779 56.8188 0.436004 56.9033 0.466797C56.9249 0.474667 56.9463 0.483155 56.9678 0.491211C57.0591 0.525421 57.1496 0.561113 57.2393 0.598633C57.2786 0.615082 57.3175 0.632339 57.3564 0.649414C57.4289 0.681148 57.501 0.713205 57.5723 0.74707C57.6239 0.771589 57.6746 0.797624 57.7256 0.823242C57.7818 0.851523 57.8381 0.87958 57.8936 0.90918C57.9439 0.936029 57.9933 0.964268 58.043 0.992188C58.1052 1.02718 58.1674 1.06199 58.2285 1.09863C58.2699 1.12345 58.3107 1.14924 58.3516 1.1748C58.4109 1.21193 58.47 1.24941 58.5283 1.28809C58.5764 1.31995 58.6236 1.35284 58.6709 1.38574C58.7261 1.42416 58.7808 1.46313 58.835 1.50293C58.8736 1.53132 58.9121 1.55978 58.9502 1.58887C59.0082 1.63322 59.0653 1.67867 59.1221 1.72461C59.1704 1.76376 59.2182 1.80347 59.2656 1.84375C59.3105 1.88187 59.3545 1.92085 59.3984 1.95996C59.4398 1.99674 59.4809 2.03364 59.5215 2.07129C59.5708 2.11706 59.6199 2.16294 59.668 2.20996C59.7119 2.25294 59.7549 2.29681 59.7979 2.34082C59.8419 2.38599 59.8858 2.4313 59.9287 2.47754C59.9631 2.51452 59.9966 2.55219 60.0303 2.58984C60.0785 2.64388 60.1261 2.69852 60.1729 2.75391C60.204 2.79082 60.2351 2.82774 60.2656 2.86523C60.318 2.92965 60.3686 2.99542 60.4189 3.06152C60.4439 3.09426 60.4688 3.12701 60.4932 3.16016C60.5333 3.21463 60.5726 3.26965 60.6113 3.3252C60.6449 3.37341 60.6784 3.4217 60.7109 3.4707C60.7483 3.52704 60.7844 3.58424 60.8203 3.6416C60.8513 3.69112 60.8822 3.74075 60.9121 3.79102C60.9428 3.84262 60.9724 3.8949 61.002 3.94727C61.0304 3.99763 61.0596 4.04758 61.0869 4.09863C61.1245 4.16879 61.1599 4.2401 61.1953 4.31152C61.2135 4.34829 61.2323 4.38478 61.25 4.42188C61.2816 4.48824 61.3111 4.55565 61.3408 4.62305C61.3629 4.67302 61.3852 4.72291 61.4062 4.77344C61.4327 4.83705 61.4576 4.90136 61.4824 4.96582C61.5021 5.01683 61.5224 5.06761 61.541 5.11914C61.5682 5.19437 61.5933 5.27039 61.6182 5.34668C61.6312 5.38668 61.6448 5.42651 61.6572 5.4668C61.682 5.54713 61.7034 5.62854 61.7256 5.70996C61.7374 5.75328 61.7507 5.79623 61.7617 5.83984C61.7805 5.91388 61.7969 5.98861 61.8135 6.06348C61.824 6.11067 61.8361 6.15756 61.8457 6.20508C61.8581 6.26624 61.868 6.32797 61.8789 6.38965C61.8911 6.45875 61.9037 6.52793 61.9141 6.59766C61.9379 6.75724 61.9558 6.91845 61.9697 7.08105C61.9886 7.30158 62 7.52459 62 7.75V15.8037L78.5 6.27734V35.7227L62 26.1953V33.583C62 37.8632 58.5302 41.333 54.25 41.333H7.75C3.46979 41.333 0 37.8632 0 33.583V7.75C0 3.46979 3.46979 0 7.75 0H54.25ZM7.75 1C4.02208 1 1 4.02208 1 7.75V33.583C1 37.3109 4.02208 40.333 7.75 40.333H54.25C57.9779 40.333 61 37.3109 61 33.583V7.75C61 7.52189 60.9879 7.29651 60.9658 7.07422C60.9389 6.80345 60.8949 6.53773 60.8369 6.27734C60.7981 6.10316 60.7531 5.93152 60.7012 5.7627C59.9808 3.4216 58.0229 1.62277 55.5898 1.13281C55.3996 1.09451 55.2064 1.06589 55.0107 1.04395C54.9847 1.04102 54.9588 1.0368 54.9326 1.03418C54.7081 1.01164 54.4804 1 54.25 1H7.75ZM62.5 16.6699L62 16.958V25.04L62.5 25.3291L77.5 33.9902V8.00879L62.5 16.6699Z" fill="var(--input-tab-text-color)" />
+        <circle cx="15" cy="20" r="3" fill="var(--input-tab-text-color)" style="mix-blend-mode: overlay;" />
+      </svg>
+      <h4 class="tab-title right-panel-title" data-text="SAVE CLIP">SAVE CLIP</h4>
+    </div>
+                    <div class="right-panel-content right-panel-duplicate">
+        <svg class="record-icon record-icon-duplicate" width="79" height="42" viewBox="0 0 79 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M54.25 0L54.6484 0.00976562C54.9098 0.0230029 55.1679 0.0484001 55.4219 0.0869141C55.4756 0.0950564 55.5287 0.105996 55.582 0.115234C55.6509 0.127176 55.7198 0.138595 55.7881 0.152344C55.8349 0.161772 55.8812 0.173325 55.9277 0.183594C56.0115 0.202091 56.095 0.221002 56.1777 0.242188C56.2045 0.249047 56.2311 0.256534 56.2578 0.263672C56.3476 0.287698 56.4369 0.312703 56.5254 0.339844C56.5664 0.352413 56.6068 0.366655 56.6475 0.379883C56.7333 0.40779 56.8188 0.436004 56.9033 0.466797C56.9249 0.474667 56.9463 0.483155 56.9678 0.491211C57.0591 0.525421 57.1496 0.561113 57.2393 0.598633C57.2786 0.615082 57.3175 0.632339 57.3564 0.649414C57.4289 0.681148 57.501 0.713205 57.5723 0.74707C57.6239 0.771589 57.6746 0.797624 57.7256 0.823242C57.7818 0.851523 57.8381 0.87958 57.8936 0.90918C57.9439 0.936029 57.9933 0.964268 58.043 0.992188C58.1052 1.02718 58.1674 1.06199 58.2285 1.09863C58.2699 1.12345 58.3107 1.14924 58.3516 1.1748C58.4109 1.21193 58.47 1.24941 58.5283 1.28809C58.5764 1.31995 58.6236 1.35284 58.6709 1.38574C58.7261 1.42416 58.7808 1.46313 58.835 1.50293C58.8736 1.53132 58.9121 1.55978 58.9502 1.58887C59.0082 1.63322 59.0653 1.67867 59.1221 1.72461C59.1704 1.76376 59.2182 1.80347 59.2656 1.84375C59.3105 1.88187 59.3545 1.92085 59.3984 1.95996C59.4398 1.99674 59.4809 2.03364 59.5215 2.07129C59.5708 2.11706 59.6199 2.16294 59.668 2.20996C59.7119 2.25294 59.7549 2.29681 59.7979 2.34082C59.8419 2.38599 59.8858 2.4313 59.9287 2.47754C59.9631 2.51452 59.9966 2.55219 60.0303 2.58984C60.0785 2.64388 60.1261 2.69852 60.1729 2.75391C60.204 2.79082 60.2351 2.82774 60.2656 2.86523C60.318 2.92965 60.3686 2.99542 60.4189 3.06152C60.4439 3.09426 60.4688 3.12701 60.4932 3.16016C60.5333 3.21463 60.5726 3.26965 60.6113 3.3252C60.6449 3.37341 60.6784 3.4217 60.7109 3.4707C60.7483 3.52704 60.7844 3.58424 60.8203 3.6416C60.8513 3.69112 60.8822 3.74075 60.9121 3.79102C60.9428 3.84262 60.9724 3.8949 61.002 3.94727C61.0304 3.99763 61.0596 4.04758 61.0869 4.09863C61.1245 4.16879 61.1599 4.2401 61.1953 4.31152C61.2135 4.34829 61.2323 4.38478 61.25 4.42188C61.2816 4.48824 61.3111 4.55565 61.3408 4.62305C61.3629 4.67302 61.3852 4.72291 61.4062 4.77344C61.4327 4.83705 61.4576 4.90136 61.4824 4.96582C61.5021 5.01683 61.5224 5.06761 61.541 5.11914C61.5682 5.19437 61.5933 5.27039 61.6182 5.34668C61.6312 5.38668 61.6448 5.42651 61.6572 5.4668C61.682 5.54713 61.7034 5.62854 61.7256 5.70996C61.7374 5.75328 61.7507 5.79623 61.7617 5.83984C61.7805 5.91388 61.7969 5.98861 61.8135 6.06348C61.824 6.11067 61.8361 6.15756 61.8457 6.20508C61.8581 6.26624 61.868 6.32797 61.8789 6.38965C61.8911 6.45875 61.9037 6.52793 61.9141 6.59766C61.9379 6.75724 61.9558 6.91845 61.9697 7.08105C61.9886 7.30158 62 7.52459 62 7.75V15.8037L78.5 6.27734V35.7227L62 26.1953V33.583C62 37.8632 58.5302 41.333 54.25 41.333H7.75C3.46979 41.333 0 37.8632 0 33.583V7.75C0 3.46979 3.46979 0 7.75 0H54.25ZM7.75 1C4.02208 1 1 4.02208 1 7.75V33.583C1 37.3109 4.02208 40.333 7.75 40.333H54.25C57.9779 40.333 61 37.3109 61 33.583V7.75C61 7.52189 60.9879 7.29651 60.9658 7.07422C60.9389 6.80345 60.8949 6.53773 60.8369 6.27734C60.7981 6.10316 60.7531 5.93152 60.7012 5.7627C59.9808 3.4216 58.0229 1.62277 55.5898 1.13281C55.3996 1.09451 55.2064 1.06589 55.0107 1.04395C54.9847 1.04102 54.9588 1.0368 54.9326 1.03418C54.7081 1.01164 54.4804 1 54.25 1H7.75ZM62.5 16.6699L62 16.958V25.04L62.5 25.3291L77.5 33.9902V8.00879L62.5 16.6699Z" fill="var(--input-tab-text-color)" />
+          <circle cx="15" cy="20" r="3" fill="var(--input-tab-text-color)" style="mix-blend-mode: overlay;" />
+        </svg>
+        <h4 class="tab-title right-panel-title right-panel-title-duplicate" data-text="SAVE CLIP">SAVE CLIP</h4>
+      </div>
+    <div class="tab-content">
+      <!-- No input field - empty content area -->
+    </div>
+    <!-- Loading bar for second Save Clip button -->
+    <div class="save-clip-loading-bar" id="saveClipLoadingBar2">
+      <div class="loading-bar-background"></div>
+      <div class="loading-bar-fill"></div>
+      <div class="loading-bar-text">Processing...</div>
+    </div>
+  </div>
+  <div class="inputTab-border inputTab-right" style="bottom:226px;height:210px;" id="rightTabBorder2"></div>
+  
+  <!-- Animated Logo positioned below Save Clip button -->
+  <div class="animated-logo-container hover-animation-enabled" onclick="window.open('https://www.behance.net/shalevyermiyahu', '_blank')">
+    <!-- Crafted by text -->
+    <div class="crafted-by-text">
+      <div class="crafted-line">CRAFTED BY</div>
+      <div class="jeremiah-line">JEREMIAH</div>
+    </div>
+    <svg class="animated-logo" width="48" height="47" viewBox="0 0 247 264" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.02" />
+          <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.13" />
+        </linearGradient>
+        <filter id="shadowBlur">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
+        <filter id="whiteOffset">
+          <feOffset dx="0" dy="1"/>
+        </filter>
+        <mask id="logoMask">
+          <rect width="100%" height="100%" fill="black"/>
+          <path d="M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992ZM18.9453 16.1169C17.3881 16.1169 16.1156 17.3895 16.1156 18.9467V186.587C16.1156 188.144 17.3881 189.417 18.9453 189.417H57.4469C59.0041 189.417 60.2766 188.144 60.2766 186.587V18.9384C60.2766 17.3811 59.0041 16.1085 57.4469 16.1085H18.9453V16.1169ZM188.289 16.1169C187.535 16.1169 186.824 16.4099 186.288 16.9457L77.2294 125.921C76.7019 126.448 76.4005 127.177 76.4005 127.922V182.426C76.4005 184.201 77.8489 185.264 79.2553 185.264C80.0004 185.264 80.6869 184.98 81.231 184.427L230.056 35.5743C230.591 35.0385 230.884 34.3268 230.884 33.5733V18.9467C230.884 17.3895 229.612 16.1169 228.055 16.1169H188.289ZM102.989 16.1169C102.236 16.1169 101.524 16.4099 100.988 16.9457L77.221 40.7149C76.6852 41.2508 76.3922 41.9624 76.3922 42.7159V97.17C76.3922 98.9449 77.8405 100.008 79.2469 100.008C80.0004 100.008 80.6785 99.7236 81.231 99.171L144.764 35.591C145.292 35.0636 145.593 34.3352 145.593 33.59V18.9467C145.593 17.3895 144.321 16.1169 142.763 16.1169H102.998H102.989Z" fill="white"/>
+        </mask>
+      </defs>
+      
+      <!-- Stroke layer -->
+      <path class="logo-stroke" d="M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992ZM18.9453 16.1169C17.3881 16.1169 16.1156 17.3895 16.1156 18.9467V186.587C16.1156 188.144 17.3881 189.417 18.9453 189.417H57.4469C59.0041 189.417 60.2766 188.144 60.2766 186.587V18.9384C60.2766 17.3811 59.0041 16.1085 57.4469 16.1085H18.9453V16.1169ZM188.289 16.1169C187.535 16.1169 186.824 16.4099 186.288 16.9457L77.2294 125.921C76.7019 126.448 76.4005 127.177 76.4005 127.922V182.426C76.4005 184.201 77.8489 185.264 79.2553 185.264C80.0004 185.264 80.6869 184.98 81.231 184.427L230.056 35.5743C230.591 35.0385 230.884 34.3268 230.884 33.5733V18.9467C230.884 17.3895 229.612 16.1169 228.055 16.1169H188.289ZM102.989 16.1169C102.236 16.1169 101.524 16.4099 100.988 16.9457L77.221 40.7149C76.6852 41.2508 76.3922 41.9624 76.3922 42.7159V97.17C76.3922 98.9449 77.8405 100.008 79.2469 100.008C80.0004 100.008 80.6785 99.7236 81.231 99.171L144.764 35.591C145.292 35.0636 145.593 34.3352 145.593 33.59V18.9467C145.593 17.3895 144.321 16.1169 142.763 16.1169H102.998H102.989Z" 
+            fill="none" 
+            stroke="#ffffff" 
+            stroke-width="5"/>
+    </svg>
+  </div>
+
+  <!-- Animated Logo Duplicate for increased brightness -->
+  <div class="animated-logo-container hover-animation-enabled" onclick="window.open('https://www.behance.net/shalevyermiyahu', '_blank')">
+    <!-- Crafted by text -->
+    <div class="crafted-by-text">
+      <div class="crafted-line">CRAFTED BY</div>
+      <div class="jeremiah-line">JEREMIAH</div>
+    </div>
+    <svg class="animated-logo" width="48" height="47" viewBox="0 0 247 264" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logoGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.02" />
+          <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.13" />
+        </linearGradient>
+        <filter id="shadowBlur2">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
+        <filter id="whiteOffset2">
+          <feOffset dx="0" dy="1"/>
+        </filter>
+        <mask id="logoMask2">
+          <rect width="100%" height="100%" fill="black"/>
+          <path d="M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992ZM18.9453 16.1169C17.3881 16.1169 16.1156 17.3895 16.1156 18.9467V186.587C16.1156 188.144 17.3881 189.417 18.9453 189.417H57.4469C59.0041 189.417 60.2766 188.144 60.2766 186.587V18.9384C60.2766 17.3811 59.0041 16.1085 57.4469 16.1085H18.9453V16.1169ZM188.289 16.1169C187.535 16.1169 186.824 16.4099 186.288 16.9457L77.2294 125.921C76.7019 126.448 76.4005 127.177 76.4005 127.922V182.426C76.4005 184.201 77.8489 185.264 79.2553 185.264C80.0004 185.264 80.6869 184.98 81.231 184.427L230.056 35.5743C230.591 35.0385 230.884 34.3268 230.884 33.5733V18.9467C230.884 17.3895 229.612 16.1169 228.055 16.1169H188.289ZM102.989 16.1169C102.236 16.1169 101.524 16.4099 100.988 16.9457L77.221 40.7149C76.6852 41.2508 76.3922 41.9624 76.3922 42.7159V97.17C76.3922 98.9449 77.8405 100.008 79.2469 100.008C80.0004 100.008 80.6785 99.7236 81.231 99.171L144.764 35.591C145.292 35.0636 145.593 34.3352 145.593 33.59V18.9467C145.593 17.3895 144.321 16.1169 142.763 16.1169H102.998H102.989Z" fill="white"/>
+        </mask>
+      </defs>
+      
+      <!-- Stroke layer -->
+      <path class="logo-stroke" d="M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992ZM18.9453 16.1169C17.3881 16.1169 16.1156 17.3895 16.1156 18.9467V186.587C16.1156 188.144 17.3881 189.417 18.9453 189.417H57.4469C59.0041 189.417 60.2766 188.144 60.2766 186.587V18.9384C60.2766 17.3811 59.0041 16.1085 57.4469 16.1085H18.9453V16.1169ZM188.289 16.1169C187.535 16.1169 186.824 16.4099 186.288 16.9457L77.2294 125.921C76.7019 126.448 76.4005 127.177 76.4005 127.922V182.426C76.4005 184.201 77.8489 185.264 79.2553 185.264C80.0004 185.264 80.6869 184.98 81.231 184.427L230.056 35.5743C230.591 35.0385 230.884 34.3268 230.884 33.5733V18.9467C230.884 17.3895 229.612 16.1169 228.055 16.1169H188.289ZM102.989 16.1169C102.236 16.1169 101.524 16.4099 100.988 16.9457L77.221 40.7149C76.6852 41.2508 76.3922 41.9624 76.3922 42.7159V97.17C76.3922 98.9449 77.8405 100.008 79.2469 100.008C80.0004 100.008 80.6785 99.7236 81.231 99.171L144.764 35.591C145.292 35.0636 145.593 34.3352 145.593 33.59V18.9467C145.593 17.3895 144.321 16.1169 142.763 16.1169H102.998H102.989Z" 
+            fill="none" 
+            stroke="#ffffff" 
+            stroke-width="5"/>
+    </svg>
+  </div>
+
+  <!-- Animated Logo Third Duplicate for maximum brightness -->
+  <div class="animated-logo-container hover-animation-enabled" onclick="window.open('https://www.behance.net/shalevyermiyahu', '_blank')">
+    <!-- Crafted by text -->
+    <div class="crafted-by-text">
+      <div class="crafted-line">CRAFTED BY</div>
+      <div class="jeremiah-line">JEREMIAH</div>
+    </div>
+    <svg class="animated-logo" width="48" height="47" viewBox="0 0 247 264" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logoGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.02" />
+          <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.13" />
+        </linearGradient>
+        <filter id="shadowBlur3">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
+        <filter id="whiteOffset3">
+          <feOffset dx="0" dy="1"/>
+        </filter>
+        <mask id="logoMask3">
+          <rect width="100%" height="100%" fill="black"/>
+          <path d="M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992ZM18.9453 16.1169C17.3881 16.1169 16.1156 17.3895 16.1156 18.9467V186.587C16.1156 188.144 17.3881 189.417 18.9453 189.417H57.4469C59.0041 189.417 60.2766 188.144 60.2766 186.587V18.9384C60.2766 17.3811 59.0041 16.1085 57.4469 16.1085H18.9453V16.1169ZM188.289 16.1169C187.535 16.1169 186.824 16.4099 186.288 16.9457L77.2294 125.921C76.7019 126.448 76.4005 127.177 76.4005 127.922V182.426C76.4005 184.201 77.8489 185.264 79.2553 185.264C80.0004 185.264 80.6869 184.98 81.231 184.427L230.056 35.5743C230.591 35.0385 230.884 34.3268 230.884 33.5733V18.9467C230.884 17.3895 229.612 16.1169 228.055 16.1169H188.289ZM102.989 16.1169C102.236 16.1169 101.524 16.4099 100.988 16.9457L77.221 40.7149C76.6852 41.2508 76.3922 41.9624 76.3922 42.7159V97.17C76.3922 98.9449 77.8405 100.008 79.2469 100.008C80.0004 100.008 80.6785 99.7236 81.231 99.171L144.764 35.591C145.292 35.0636 145.593 34.3352 145.593 33.59V18.9467C145.593 17.3895 144.321 16.1169 142.763 16.1169H102.998H102.989Z" fill="white"/>
+        </mask>
+      </defs>
+      
+      <!-- Stroke layer -->
+      <path class="logo-stroke" d="M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992ZM18.9453 16.1169C17.3881 16.1169 16.1156 17.3895 16.1156 18.9467V186.587C16.1156 188.144 17.3881 189.417 18.9453 189.417H57.4469C59.0041 189.417 60.2766 188.144 60.2766 186.587V18.9384C60.2766 17.3811 59.0041 16.1085 57.4469 16.1085H18.9453V16.1169ZM188.289 16.1169C187.535 16.1169 186.824 16.4099 186.288 16.9457L77.2294 125.921C76.7019 126.448 76.4005 127.177 76.4005 127.922V182.426C76.4005 184.201 77.8489 185.264 79.2553 185.264C80.0004 185.264 80.6869 184.98 81.231 184.427L230.056 35.5743C230.591 35.0385 230.884 34.3268 230.884 33.5733V18.9467C230.884 17.3895 229.612 16.1169 228.055 16.1169H188.289ZM102.989 16.1169C102.236 16.1169 101.524 16.4099 100.988 16.9457L77.221 40.7149C76.6852 41.2508 76.3922 41.9624 76.3922 42.7159V97.17C76.3922 98.9449 77.8405 100.008 79.2469 100.008C80.0004 100.008 80.6785 99.7236 81.231 99.171L144.764 35.591C145.292 35.0636 145.593 34.3352 145.593 33.59V18.9467C145.593 17.3895 144.321 16.1169 142.763 16.1169H102.998H102.989Z" 
+            fill="none" 
+            stroke="#ffffff" 
+            stroke-width="5"/>
+    </svg>
+  </div>
+  
+  <!-- Horizontal separator line on left side -->
+      <div class="horizontal-separator"></div>
+    <div class="horizontal-separator-2"></div>
+  
+      <!-- Generate Card text in middle of horizontal separator -->
+    <div class="horizontal-separator-text" data-text="Generate Card">Generate Card</div>
+<div class="horizontal-separator-text-2" data-text="Generate Card">Generate Card</div>
+    
+    <!-- Invisible hover area for Generate Card button -->
+    <div class="generate-card-hover-area"></div>
+    
+    <!-- Instructions Section -->
+    <div class="instructions-section">
+      <div class="instructions-header">
+        <img src="Assets/info.svg" class="info-icon" alt="Info">
+        <h3 class="instructions-title">How to use?</h3>
+      </div>
+      <p class="instructions-text">Say whatever you want, the app will generate a unique
+personal card with your message.
+
+Be yourself! Polite, friendly, aggressive, or even curse,
+the card will describe your emotions best
+(hopefully, we're still in beta).
+Enjoy!
+
+<span style="font-weight: bold; font-style: italic;">Chrome browser is required!</span></p>
+    </div>
+    <!-- Instructions Section Duplicate -->
+    <div class="instructions-section instructions-section-duplicate">
+      <div class="instructions-header">
+        <img src="Assets/info.svg" class="info-icon" alt="Info">
+        <h3 class="instructions-title">How to use?</h3>
+      </div>
+      <p class="instructions-text">Say whatever you want, the app will generate a unique
+personal card with your message.
+
+Be yourself! Polite, friendly, aggressive, or even curse,
+the card will describe your emotions best
+(hopefully, we're still in beta).
+Enjoy!
+
+<span style="font-weight: bold; font-style: italic;">Chrome browser is required!</span></p>
+    </div>
+    <!-- Instructions Section Triplicate -->
+    <div class="instructions-section instructions-section-triplicate">
+      <div class="instructions-header">
+        <img src="Assets/info.svg" class="info-icon" alt="Info">
+        <h3 class="instructions-title">How to use?</h3>
+      </div>
+      <p class="instructions-text">Say whatever you want, the app will generate a unique
+personal card with your message.
+
+Be yourself! Polite, friendly, aggressive, or even curse,
+the card will describe your emotions best
+(hopefully, we're still in beta).
+Enjoy!
+
+<span style="font-weight: bold; font-style: italic;">Chrome browser is required!</span></p>
+    </div>
+
+  <!-- Layout 3: Big Text (to be populated by JS) -->
+  <div class="layout-3">
+    <div id="layout-3-text" class="big-text-container">
+      <!-- Text will be populated by JavaScript after analysis -->
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+  <script src="webgl_displacement.js"></script>
+  <script src="chrome_equalizer.js"></script>
+  <script src="glassEffect.js"></script>
+  <script src="artGenerator.js"></script>
+  <script src="equalizer_integration.js"></script>
+  <script src="sketch.js"></script>
+  <script src="waveformVisualizer.js"></script>
+  <script src="voiceRecorder.js"></script>
+  <script src="recording.js"></script>
+  <script>
+    function syncInputTabs() {
+      const card = document.querySelector('.card');
+      const tabs = document.querySelector('.input-tabs');
+      if (!card || !tabs) return;
+      const rect = card.getBoundingClientRect();
+      tabs.style.top = `${rect.top}px`;
+      tabs.style.height = `${rect.height}px`;
+    }
+
+    window.addEventListener('load', () => {
+      syncInputTabs();
+      const card = document.querySelector('.card');
+      if (card && typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(syncInputTabs);
+        ro.observe(card);
+      }
+    });
+    window.addEventListener('resize', syncInputTabs);
+    window.addEventListener('scroll', syncInputTabs);
+
+    // === Sync Author Name inputs between duplicate overlays ===
+    // This section is now handled in the validation section below
+
+    // === Align Name/Record tabs to top of card ===
+    function positionTabsToCard(){
+      const card = document.querySelector('.card');
+      if(!card) return;
+      const rect = card.getBoundingClientRect();
+      const authorHeight = 85;
+      const recordingHeight = 140;
+      const CONSISTENT_GAP = 16; // Same gap as between recording and message tabs
+      const RECORD_MESSAGE_GAP = 16; // Gap between record (inputTab 2) and message (inputTab 3)
+
+      const authorTop = rect.top; // InputTabs should align with card (card already moved 75px up)
+      const recordTop = authorTop + authorHeight + CONSISTENT_GAP; // consistent doubled gap
+      const messageTop = recordTop + recordingHeight + RECORD_MESSAGE_GAP; // gap between record and message
+      const messageInitHeight = 85;  // base collapsed height
+      
+      // Position edit title 30px above the first inputTab (lifted 10px higher)
+      const titleTop = authorTop - 30 - 24; // 30px gap + 24px font height
+      const editTitleElem = document.querySelector('.edit-title');
+      const editTitleElem2 = document.querySelector('.edit-title-2');
+      
+      // Position preview title 30px above the card
+      const previewTitleTop = rect.top - 30 - 24; // 30px gap + 24px font height above card
+      const previewTitleLeft = rect.left; // Align with card's left edge
+      const previewTitleElem = document.querySelector('.preview-title');
+      const previewTitleElem2 = document.querySelector('.preview-title-2');
+      
+      // Position share title at the same Y level as edit and preview titles
+      const shareTitleElem = document.querySelector('.share-title');
+      const shareTitleElem2 = document.querySelector('.share-title-2');
+
+      const authorElems = [
+        document.getElementById('authorTabBg'),
+        document.getElementById('authorTabContent1'),
+        document.getElementById('authorTabContent2'),
+        document.getElementById('authorTabBorder')
+      ];
+      const rightTabElems = [
+        document.getElementById('rightTabBg'),
+        document.getElementById('rightTabContent1'),
+        document.getElementById('rightTabContent2'),
+        document.getElementById('rightTabBorder')
+      ];
+      const rightTab2Elems = [
+        document.getElementById('rightTabBg2'),
+        document.getElementById('rightTabContent3'),
+        document.getElementById('rightTabContent4'),
+        document.getElementById('rightTabBorder2')
+      ];
+      const recordElems = [
+        document.getElementById('recordTabBg'),
+        document.getElementById('recordTabContent1'),
+        document.getElementById('recordTabContent2'),
+        document.getElementById('recordTabBorder')
+      ];
+      const author2Elems = [
+        document.getElementById('messageInputBg'),
+        document.getElementById('messageInputContent1'),
+        document.getElementById('messageInputContent2'),
+        document.getElementById('messageInputBorder')
+      ];
+      const generateCardElems = [
+        document.getElementById('generateCardContent')
+      ];
+
+      if(editTitleElem){ editTitleElem.style.top = titleTop+'px'; editTitleElem.style.left='50px'; editTitleElem.style.right='auto'; }
+      if(editTitleElem2){ editTitleElem2.style.top = titleTop+'px'; editTitleElem2.style.left='50px'; editTitleElem2.style.right='auto'; }
+      if(previewTitleElem){ previewTitleElem.style.top = previewTitleTop+'px'; previewTitleElem.style.left=previewTitleLeft+'px'; previewTitleElem.style.right='auto'; }
+      if(previewTitleElem2){ previewTitleElem2.style.top = previewTitleTop+'px'; previewTitleElem2.style.left=previewTitleLeft+'px'; previewTitleElem2.style.right='auto'; }
+      if(shareTitleElem){ shareTitleElem.style.top = titleTop+'px'; shareTitleElem.style.left='auto'; shareTitleElem.style.right='330px'; }
+      if(shareTitleElem2){ shareTitleElem2.style.top = titleTop+'px'; shareTitleElem2.style.left='auto'; shareTitleElem2.style.right='330px'; }
+      authorElems.forEach(el=>{ if(el){ el.style.top = authorTop+'px'; el.style.bottom='auto'; el.style.left='50px'; el.style.right='auto'; }});
+      rightTabElems.forEach(el=>{ if(el){ el.style.top = authorTop+'px'; el.style.bottom='auto'; el.style.left='auto'; el.style.right='50px'; el.style.height='210px'; }});
+      rightTab2Elems.forEach(el=>{ if(el){ el.style.top = (authorTop + 230)+'px'; el.style.bottom='auto'; el.style.left='auto'; el.style.right='50px'; el.style.height='210px'; }});
+      recordElems.forEach(el=>{ if(el){ el.style.top = recordTop+'px'; el.style.bottom='auto'; el.style.left='50px'; el.style.right='auto'; }});
+      // Get current message container height, don't override it
+      const currentMessageContainer = document.getElementById('messageInputBg');
+      let currentMessageHeight = messageInitHeight;
+      if (currentMessageContainer) {
+        const computedStyle = window.getComputedStyle(currentMessageContainer);
+        const currentHeight = parseInt(computedStyle.height);
+        if (currentHeight && currentHeight > messageInitHeight) {
+          currentMessageHeight = currentHeight; // Preserve expanded height
+        }
+      }
+      
+      author2Elems.forEach(el=>{ if(el){ el.style.top = messageTop+'px'; el.style.bottom='auto'; el.style.height = currentMessageHeight+'px'; el.style.left='50px'; el.style.right='auto'; }});
+      
+      // Position generate card button with consistent gap using current height
+      updateGenerateButtonPosition(currentMessageHeight);
+    }
+
+    window.addEventListener('load', positionTabsToCard);
+    window.addEventListener('resize', positionTabsToCard);
+    window.addEventListener('scroll', positionTabsToCard);
+
+    // Message inputs handling is now merged with validation section below
+    
+    // capture base single line height for message textarea
+    const baseLineHeight = (() => {
+      const temp = document.createElement('textarea');
+      temp.style.visibility = 'hidden';
+      temp.style.position = 'absolute';
+      temp.style.fontSize = '19px';
+      temp.style.lineHeight = '1.2';
+      temp.rows = 1;
+      document.body.appendChild(temp);
+      const h = temp.scrollHeight;
+      document.body.removeChild(temp);
+      return h;
+    })();
+
+    function resizeMessageTab() {
+      const messageInputs = document.querySelectorAll('.message-textarea');
+      if (messageInputs.length === 0) return;
+
+      // Use first textarea to calculate height
+      const primaryTextarea = messageInputs[0];
+      const scrollTop = primaryTextarea.scrollTop;
+
+      // Check if content actually contains line breaks
+      const hasLineBreaks = primaryTextarea.value.includes('\n');
+      
+      // Reset height temporarily to get natural scroll & client heights
+      primaryTextarea.style.height = 'auto';
+      const contentHeight = primaryTextarea.scrollHeight;
+      const visibleHeight = primaryTextarea.clientHeight; // includes padding
+
+      // Determine if content wraps beyond one visible line
+      const wraps = contentHeight > visibleHeight + 1; // small tolerance
+
+      if (hasLineBreaks || wraps) {
+        newTextareaHeight = contentHeight; // multi-line
+      } else {
+        newTextareaHeight = baseLineHeight; // single line
+      }
+
+      // Debug logging
+      console.log(`Single-line detection: hasBreak=${hasLineBreaks}, wraps=${wraps}, contentHeight=${contentHeight}, visibleHeight=${visibleHeight}, using=${newTextareaHeight}`);
+
+      // Apply height to ALL textareas
+      messageInputs.forEach(textarea => {
+        textarea.style.height = 'auto';
+        textarea.style.height = newTextareaHeight + 'px';
+      });
+
+      // Restore scroll position to primary textarea
+      primaryTextarea.scrollTop = scrollTop;
+
+      // Calculate container height
+      const padding = 40; // 20 top + 20 bottom
+      const titleHeight = 12;
+      const gap = 10;
+      const containerHeight = padding + titleHeight + gap + newTextareaHeight;
+
+      // Resize containers
+      const messageElems = [
+        document.getElementById('messageInputBg'),
+        document.getElementById('messageInputContent1'),
+        document.getElementById('messageInputContent2'),
+        document.getElementById('messageInputBorder')
+      ];
+
+      messageElems.forEach(el => {
+        if (el) {
+          el.style.height = containerHeight + 'px';
+          el.style.left = '50px';
+          el.style.right = 'auto';
+        }
+      });
+
+      // Update generate card button position with consistent gap
+      updateGenerateButtonPosition(containerHeight);
+    }
+
+    // Function to update generate button position with consistent gap
+    function updateGenerateButtonPosition(messageContainerHeight = null) {
+      const card = document.querySelector('.card');
+      if (!card) return;
+      
+      // Grab current message container element & metrics
+      const messageContainer = document.getElementById('messageInputBg');
+      if (!messageContainer) return;
+      const msgRect = messageContainer.getBoundingClientRect(); // live visual box
+      
+      const MESSAGE_GAP_BASE = 16; // Gap between record (tab 2) and message (tab 3)
+      const MESSAGE_BUTTON_GAP = MESSAGE_GAP_BASE * 2; // Always 2x
+      
+      // Desired top for Gen-Card := bottom of message container + fixed gap
+      const generateCardTop = msgRect.bottom + MESSAGE_BUTTON_GAP; // viewport-relative coordinate
+      
+      const authorHeight = 85; // for button height calc
+      const generateCardHeight = authorHeight * 0.64;
+      
+      // Generate Card button positioning no longer needed - using hover area instead
+    }
+
+    // Expose functions globally
+    window.resizeMessageTab = resizeMessageTab;
+    window.updateGenerateButtonPosition = updateGenerateButtonPosition;
+
+    // === INSTRUCTIONS VISIBILITY CONTROL ===
+    function checkMessageInput() {
+      const messageInputs = document.querySelectorAll('.message-textarea');
+      let hasText = false;
+      
+      messageInputs.forEach(textarea => {
+        if (textarea.value.trim().length > 0) {
+          hasText = true;
+        }
+      });
+      
+      // Toggle body class based on whether any message input has text
+      if (hasText) {
+        document.body.classList.add('has-message-text');
+      } else {
+        document.body.classList.remove('has-message-text');
+      }
+    }
+
+    // Expose checkMessageInput globally so recording.js can call it
+    window.checkInstructionsVisibility = checkMessageInput;
+
+    // Monitor message input changes
+    function setupInstructionsVisibility() {
+      const messageInputs = document.querySelectorAll('.message-textarea');
+      
+      messageInputs.forEach(textarea => {
+        // Listen for input changes
+        textarea.addEventListener('input', checkMessageInput);
+        textarea.addEventListener('keyup', checkMessageInput);
+        textarea.addEventListener('paste', () => {
+          // Slight delay to allow paste content to be processed
+          setTimeout(checkMessageInput, 10);
+        });
+        textarea.addEventListener('blur', checkMessageInput);
+      });
+      
+      // Initial check
+      checkMessageInput();
+    }
+
+    // Initialize instructions visibility control when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupInstructionsVisibility);
+    } else {
+      setupInstructionsVisibility();
+    }
+
+    // === GENERATE CARD button hover effect ===
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const genTexts = document.querySelectorAll('.generate-card-text');
+      genTexts.forEach(genText => {
+        if(genText){
+          // Split text into spans if not already done
+          if(!genText.dataset.prepared){
+            const chars = genText.textContent.trim().split('');
+            genText.innerHTML = chars.map(ch=>{
+              if(ch===' '){
+                return '<span class="generate-space">&nbsp;</span>'; // wider space
+              }
+              return `<span class="generate-char">${ch}</span>`;
+            }).join('');
+            genText.dataset.prepared = 'true';
+
+            // After DOM updates, store base widths
+            requestAnimationFrame(()=>{
+              genText.querySelectorAll('.generate-char').forEach(span=>{
+                span.dataset.baseWidth = span.offsetWidth;
+              });
+            });
+          }
+        }
+      });
+
+      // Initialize horizontal separator text with character spans
+      const horizontalTexts = document.querySelectorAll('.horizontal-separator-text');
+      horizontalTexts.forEach(hText => {
+        if(hText && !hText.dataset.prepared){
+          const chars = hText.textContent.trim().split('');
+          hText.innerHTML = chars.map(ch=>{
+            if(ch===' '){
+              return '<span class="generate-space">&nbsp;</span>';
+            }
+            return `<span class="generate-char">${ch}</span>`;
+          }).join('');
+          hText.dataset.prepared = 'true';
+
+          // Store base widths after DOM updates
+          requestAnimationFrame(()=>{
+            hText.querySelectorAll('.generate-char').forEach(span=>{
+              span.dataset.baseWidth = span.offsetWidth;
+            });
+          });
+        }
+      });
+
+      // Initialize duplicate horizontal separator text with character spans
+      const horizontalTexts2 = document.querySelectorAll('.horizontal-separator-text-2');
+      horizontalTexts2.forEach(hText => {
+        if(hText && !hText.dataset.prepared){
+          const chars = hText.textContent.trim().split('');
+          hText.innerHTML = chars.map(ch=>{
+            if(ch===' '){
+              return '<span class="generate-space">&nbsp;</span>';
+            }
+            return `<span class="generate-char">${ch}</span>`;
+          }).join('');
+          hText.dataset.prepared = 'true';
+
+          // Store base widths after DOM updates for duplicate text too
+          requestAnimationFrame(()=>{
+            const charSpans = hText.querySelectorAll('.generate-char');
+            charSpans.forEach(span=>{
+              span.dataset.baseWidth = span.offsetWidth;
+            });
+          });
+        }
+      });
+
+      const radius = 100; // sensitivity radius for hover effects
+      const easeOutQuad = t=>1-(1-t)*(1-t);
+
+      // === TITLE HOVER EFFECTS ===
+      // Target both primary and duplicate title elements
+      const editTitle = document.querySelector('.edit-title');
+      const editTitle2 = document.querySelector('.edit-title-2');
+      const previewTitle = document.querySelector('.preview-title');
+      const previewTitle2 = document.querySelector('.preview-title-2');
+      const shareTitle = document.querySelector('.share-title');
+      const shareTitle2 = document.querySelector('.share-title-2');
+      
+      // Function to split title text into character spans for both original and duplicate
+      function initializeTitleHover(titleElement, duplicateElement, baseWeight = 120, maxWeight = 600) {
+        // Initialize primary title
+        if(titleElement && !titleElement.dataset.prepared) {
+          const titleText = titleElement.textContent.trim();
+          titleElement.setAttribute('data-text', titleText);
+          const chars = titleText.split('');
+          titleElement.innerHTML = chars.map(ch => {
+            if(ch === ' ') {
+              return '<span class="title-space">&nbsp;</span>';
+            }
+            return `<span class="title-char">${ch}</span>`;
+          }).join('');
+          titleElement.dataset.prepared = 'true';
+          titleElement.dataset.baseWeight = baseWeight;
+          titleElement.dataset.maxWeight = maxWeight;
+        }
+        
+        // Initialize duplicate title
+        if(duplicateElement && !duplicateElement.dataset.prepared) {
+          const titleText = duplicateElement.textContent.trim();
+          duplicateElement.setAttribute('data-text', titleText);
+          const chars = titleText.split('');
+          duplicateElement.innerHTML = chars.map(ch => {
+            if(ch === ' ') {
+              return '<span class="title-space">&nbsp;</span>';
+            }
+            return `<span class="title-char">${ch}</span>`;
+          }).join('');
+          duplicateElement.dataset.prepared = 'true';
+          duplicateElement.dataset.baseWeight = baseWeight;
+          duplicateElement.dataset.maxWeight = maxWeight;
+        }
+      }
+      
+      // Function to add precise hover effect that affects both original and duplicate
+      function addTitleHoverEffect(titleElement, duplicateElement) {
+        if(!titleElement) return;
+        
+        const baseWeight = parseInt(titleElement.dataset.baseWeight) || 120;
+        const maxWeight = parseInt(titleElement.dataset.maxWeight) || 600;
+        const titleRadius = 25; // Precise radius for character-level effects
+        let rafId = null;
+        
+        // Only listen to events on the primary title element
+        titleElement.addEventListener('mouseenter', () => {
+          titleElement.style.pointerEvents = 'auto';
+        });
+        
+        titleElement.addEventListener('mousemove', e => {
+          // Prevent event bubbling to ensure we only respond to direct hover
+          e.stopPropagation();
+          
+          if(rafId) cancelAnimationFrame(rafId);
+          
+          const spans1 = titleElement.querySelectorAll('.title-char');
+          const spans2 = duplicateElement?.querySelectorAll('.title-char') || [];
+          
+          rafId = requestAnimationFrame(() => {
+            const titleRect = titleElement.getBoundingClientRect();
+            const mouseX = e.clientX - titleRect.left;
+            
+            spans1.forEach((span, index) => {
+              const spanRect = span.getBoundingClientRect();
+              const spanCenter = spanRect.left - titleRect.left + spanRect.width / 2;
+              const dist = Math.abs(mouseX - spanCenter);
+              const raw = Math.max(0, 1 - dist / titleRadius);
+              const influence = easeOutQuad(raw);
+              const newWeight = Math.round(baseWeight + influence * (maxWeight - baseWeight));
+              
+              // Apply to primary title
+              span.style.fontWeight = newWeight;
+              
+              // Apply to duplicate title
+              if(spans2[index]) {
+                spans2[index].style.fontWeight = newWeight;
+              }
+            });
+          });
+        });
+        
+        titleElement.addEventListener('mouseleave', () => {
+          if(rafId) cancelAnimationFrame(rafId);
+          
+          // Reset primary title
+          titleElement.querySelectorAll('.title-char').forEach(span => {
+            span.style.fontWeight = baseWeight;
+          });
+          
+          // Reset duplicate title
+          if(duplicateElement) {
+            duplicateElement.querySelectorAll('.title-char').forEach(span => {
+              span.style.fontWeight = baseWeight;
+            });
+          }
+        });
+      }
+      
+      // Initialize both primary and duplicate titles
+      if(editTitle) {
+        initializeTitleHover(editTitle, editTitle2, 120, 600);
+        addTitleHoverEffect(editTitle, editTitle2);
+      }
+      
+      if(previewTitle) {
+        initializeTitleHover(previewTitle, previewTitle2, 120, 600);
+        addTitleHoverEffect(previewTitle, previewTitle2);
+      }
+      
+      if(shareTitle) {
+        initializeTitleHover(shareTitle, shareTitle2, 120, 600);
+        addTitleHoverEffect(shareTitle, shareTitle2);
+      }
+
+      // === SAVE IMAGE BUTTON TEXT HOVER EFFECTS ===
+      // Individual hover effects for each button - handled in the section below
+
+            // Add hover effect using the invisible hover area
+      const horizontalText = document.querySelector('.horizontal-separator-text');
+      const horizontalText2 = document.querySelector('.horizontal-separator-text-2');
+      const hoverArea = document.querySelector('.generate-card-hover-area');
+      
+      // Initialize hover area as disabled by default
+      if (hoverArea) {
+        hoverArea.classList.add('disabled');
+      }
+      
+      if(horizontalText && hoverArea) {
+        let horizontalRafId = null;
+
+        hoverArea.addEventListener('mousemove', e=>{
+          // Calculate mouse position relative to the hover area boundaries (0-450px)
+          const hoverRect = hoverArea.getBoundingClientRect();
+          const mouseX = e.clientX - hoverRect.left; // 0 to 450px across the hover area
+          
+          // More responsive - reduce RAF throttling for faster response
+          if(horizontalRafId) cancelAnimationFrame(horizontalRafId);
+          
+          // Cache spans outside RAF for better performance
+          const spans1 = horizontalText.querySelectorAll('.generate-char');
+          const spans2 = horizontalText2?.querySelectorAll('.generate-char') || [];
+          
+          horizontalRafId = requestAnimationFrame(()=>{
+            // Get text position for character mapping
+            const textRect = horizontalText.getBoundingClientRect();
+            
+            spans1.forEach((span, index) => {
+              const sRect = span.getBoundingClientRect();
+              // Map character position to the hover area coordinate system
+              const spanCenter = sRect.left - hoverRect.left + sRect.width/2;
+              const dist = Math.abs(mouseX - spanCenter);
+              const raw = Math.max(0, 1 - dist / radius); // 0..1
+              const influence = easeOutQuad(raw); // smoother curve
+              const newWeight = Math.round(274 + influence * 426); // 274 to 700 (274 + 426 = 700)
+              
+              // Apply to main text
+              span.style.fontWeight = newWeight;
+              
+              // Apply same weight to corresponding character in duplicate text
+              if(spans2[index]) {
+                spans2[index].style.fontWeight = newWeight;
+              }
+            });
+          });
+        });
+
+        hoverArea.addEventListener('mouseleave', ()=>{
+          if(horizontalRafId) cancelAnimationFrame(horizontalRafId);
+          
+          // Reset main text
+          horizontalText.querySelectorAll('.generate-char').forEach(span=>{
+            span.style.fontWeight = '274'; // back to base
+          });
+          
+          // Reset duplicate text
+          if(horizontalText2) {
+            horizontalText2.querySelectorAll('.generate-char').forEach(span=>{
+              span.style.fontWeight = '274';
+            });
+          }
+        });
+
+        // Add click functionality to hover area
+        hoverArea.addEventListener('click', function() {
+          // Only proceed if validation passes (check if hover area is enabled)
+          if (!hoverArea.classList.contains('enabled')) {
+            return;
+          }
+
+          // Trigger the generate card functionality
+          triggerGenerateCard();
+        });
+      }
+    });
+
+    // === GENERATE CARD Loading Animation ===
+    let generatingInterval = null;
+    function startGeneratingAnimation(){
+      const horizontalTexts = document.querySelectorAll('.horizontal-separator-text, .horizontal-separator-text-2');
+      
+      // Check if already in progress
+      if(horizontalTexts.length > 0 && horizontalTexts[0].dataset.generating==='true') return;
+
+      // Show wireframe placeholder in Layout3 (inside card)
+      const layout3 = document.querySelector('.layout-main-text');
+      if (layout3) {
+        layout3.classList.add('generating');
+      }
+
+      // Animate horizontal separator texts
+      horizontalTexts.forEach(hText => {
+        // Save original markup to restore later
+        hText.dataset.originalHtml = hText.innerHTML;
+        hText.dataset.generating = 'true';
+
+        // Replace with simple text + dots span
+        hText.textContent = 'Generating';
+        const dotsSpan = document.createElement('span');
+        dotsSpan.className = 'gen-dots';
+        // Reserve fixed width so overall width remains constant
+        dotsSpan.style.display = 'inline-block';
+        dotsSpan.style.width = '3ch'; // space for three dots
+        dotsSpan.style.textAlign = 'left';
+        dotsSpan.textContent = '';
+        hText.appendChild(dotsSpan);
+      });
+
+      let dotCount = 0;
+      generatingInterval = setInterval(()=>{
+        dotCount = (dotCount + 1) % 4; // 0-3
+        const dotTexts = document.querySelectorAll('.gen-dots');
+        dotTexts.forEach(dotsSpan => {
+          dotsSpan.textContent = '.'.repeat(dotCount);
+        });
+      },500);
+    }
+
+    function stopGeneratingAnimation(){
+      const horizontalTexts = document.querySelectorAll('.horizontal-separator-text, .horizontal-separator-text-2');
+      
+      if(horizontalTexts.length === 0) return;
+      if(horizontalTexts.length > 0 && horizontalTexts[0].dataset.generating!=='true') return;
+
+      clearInterval(generatingInterval);
+      generatingInterval = null;
+
+      // Hide wireframe placeholder in Layout3 (inside card) and restore original content
+      const layout3 = document.querySelector('.layout-main-text');
+      if (layout3) {
+        layout3.classList.remove('generating');
+      }
+
+      // Restore horizontal separator texts
+      horizontalTexts.forEach(hText => {
+        // Restore original markup
+        if(hText.dataset.originalHtml){
+          hText.innerHTML = hText.dataset.originalHtml;
+        }
+        hText.dataset.generating='false';
+      });
+      
+      // Now apply the button color since generation is complete
+      if (typeof window.applyEmotionColorToButton === 'function' && window.lastGeneratedEmotions) {
+        setTimeout(() => {
+          window.applyEmotionColorToButton(window.lastGeneratedEmotions);
+        }, 50);
+      }
+
+      // Start the brightness pulse loop animation after card generation
+      if (typeof window.startBrightnessPulseLoop === 'function') {
+        setTimeout(() => {
+          window.startBrightnessPulseLoop();
+        }, 100);
+      }
+    }
+
+    // === VALIDATION AND INTEGRATION ===
+    
+    // Validation state tracking
+    let validationState = {
+      authorName: false,
+      hasRecording: false,
+      hasMessage: false,
+      recordingAnalyzed: false
+    };
+
+    // Function to check validation and update generate button
+    function updateGenerateButtonState() {
+      const hoverArea = document.querySelector('.generate-card-hover-area');
+      
+      const hasContent = validationState.hasRecording || validationState.hasMessage;
+      const isValid = validationState.authorName && hasContent;
+      
+      // Update hover area state with smoother transitions
+      if (hoverArea) {
+        if (isValid) {
+          // Use requestAnimationFrame to ensure smooth transition
+          requestAnimationFrame(() => {
+            hoverArea.classList.remove('disabled');
+            hoverArea.classList.add('enabled');
+          });
+        } else {
+          // Use requestAnimationFrame to ensure smooth transition
+          requestAnimationFrame(() => {
+            hoverArea.classList.remove('enabled');
+            hoverArea.classList.add('disabled');
+          });
+        }
+      }
+      
+      // Update debug indicator based on validation state
+      if (typeof window.updateDebugColorIndicator === 'function') {
+        if (!isValid) {
+          // Show disabled state color and brightness (using dark purple)
+          const disabledColor = '#141221';
+          const disabledBrightness = 0.08; // Very dark purple
+          window.updateDebugColorIndicator(disabledColor, '#ffffff', 'DISABLED', disabledBrightness);
+        } else if (!document.body.classList.contains('art-generated')) {
+          // Show ready state color and brightness (using active purple)
+          const readyColor = '#524884';
+          const readyBrightness = 0.35; // Purple is relatively dark
+          window.updateDebugColorIndicator(readyColor, '#ffffff', 'READY', readyBrightness);
+        }
+        // If art is generated and button is valid, the color will be updated by applyEmotionColorToButton
+      }
+    }
+
+    // Author name validation
+    const authorInputs = document.querySelectorAll('.author-input');
+    authorInputs.forEach(inp => {
+      inp.addEventListener('input', e => {
+        let val = e.target.value;
+        
+        // Auto-capitalize first letter if it's the beginning of text
+        if (val.length === 1 && val.match(/[a-z]/)) {
+          val = val.toUpperCase();
+          e.target.value = val;
+          // Move cursor to end
+          e.target.setSelectionRange(val.length, val.length);
+        }
+        
+        const trimmedVal = val.trim();
+        validationState.authorName = trimmedVal.length > 0;
+        
+        // Sync between inputs
+        authorInputs.forEach(other => {
+          if (other !== e.target) {
+            other.value = e.target.value;
+          }
+        });
+        
+        // Update Made by text
+        const madeBy = document.getElementById('madeByName');
+        if (madeBy) {
+          const capitalizedVal = trimmedVal
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+          madeBy.textContent = capitalizedVal || 'None';
+        }
+        
+        updateGenerateButtonState();
+      });
+    });
+
+    // Message textarea validation
+    const messageInputs = document.querySelectorAll('.message-textarea');
+    
+    // Initialize both textareas with identical properties
+    messageInputs.forEach(t => {
+      t.placeholder = 'Enter Message';
+      t.value = '';
+      t.style.height = 'auto';
+      t.rows = 1;
+      t.style.overflowY = 'hidden';
+    });
+    
+    messageInputs.forEach(inp => {
+      inp.addEventListener('input', e => {
+        let val = e.target.value;
+        
+        // Auto-capitalize first letter if it's the beginning of text
+        if (val.length === 1 && val.match(/[a-z]/)) {
+          val = val.toUpperCase();
+          e.target.value = val;
+          // Move cursor to end
+          e.target.setSelectionRange(val.length, val.length);
+        }
+        
+        const trimmedVal = val.trim();
+        validationState.hasMessage = trimmedVal.length > 0;
+        
+        // Sync content to all textareas first
+        messageInputs.forEach(other => {
+          if(other !== e.target) { 
+            other.value = e.target.value; 
+          }
+        });
+        
+        // Then resize everything consistently
+        resizeMessageTab();
+        updateGenerateButtonState();
+      });
+      
+      // Also handle paste events
+      inp.addEventListener('paste', () => {
+        setTimeout(() => {
+          validationState.hasMessage = inp.value.trim().length > 0;
+          resizeMessageTab();
+          updateGenerateButtonState();
+        }, 0);
+      });
+      
+      // Handle delete/backspace for shrinking
+      inp.addEventListener('keyup', e => {
+        if(e.key === 'Backspace' || e.key === 'Delete') {
+          validationState.hasMessage = inp.value.trim().length > 0;
+          resizeMessageTab();
+          updateGenerateButtonState();
+        }
+      });
+    });
+    
+    // Initial resize
+    resizeMessageTab();
+
+    // Function to check if recording has content (called from recording.js)
+    window.updateRecordingValidation = function(hasContent, isAnalyzed) {
+      validationState.hasRecording = hasContent;
+      validationState.recordingAnalyzed = isAnalyzed;
+      updateGenerateButtonState();
+    };
+
+    // Generate Card functionality (now handled by hover area)
+    function triggerGenerateCard() {
+      // Only proceed if validation passes
+      if (!validationState.authorName || (!validationState.hasRecording && !validationState.hasMessage)) {
+        return;
+      }
+
+      // Begin loading animation
+      startGeneratingAnimation();
+
+      // Observe loading indicator to know when analysis is done
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      let loadingObserver=null;
+      if(loadingIndicator){
+        loadingObserver = new MutationObserver(()=>{
+          if(loadingIndicator.style.display==='none' || loadingIndicator.style.display===''){
+            stopGeneratingAnimation();
+            if(loadingObserver) loadingObserver.disconnect();
+          }
+        });
+        loadingObserver.observe(loadingIndicator,{attributes:true,attributeFilter:['style']});
+      }
+      
+      // Get author name from the author input field
+      const authorText = document.querySelector('.author-input').value.trim();
+      
+      // Get text to analyze - prioritize message textarea, fallback to transcribed text
+      const messageText = document.querySelector('.message-textarea').value.trim();
+      const sentenceInput = document.getElementById('sentenceInput');
+      
+      let textToAnalyze = messageText;
+      if (!textToAnalyze && sentenceInput) {
+        textToAnalyze = sentenceInput.value.trim();
+      }
+      
+      if (!textToAnalyze) {
+        alert("No text content found to analyze.");
+        stopGeneratingAnimation();
+        return;
+      }
+      
+      // Set both inputs for the analysis system
+      const userNameInput = document.getElementById('userNameInput');
+      if (userNameInput) {
+        userNameInput.value = authorText;
+      }
+      
+      if (sentenceInput) {
+        sentenceInput.value = textToAnalyze;
+      }
+      
+      // Trigger the same analysis by programmatically clicking the blue Analyze button
+      const analyzeBtn = document.getElementById('analyzeSentenceBtn');
+      if (analyzeBtn) {
+        analyzeBtn.click();
+      } else {
+        console.error('Analyze button not found');
+        stopGeneratingAnimation();
+      }
+    }
+
+    // Initial validation state
+    updateGenerateButtonState();
+
+    // === CAPTURE STREAM CACHING SYSTEM ===
+    let globalCaptureStream = null;
+    let streamExpiryTime = null;
+    const STREAM_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+    // === STREAM VALIDATION FUNCTIONS ===
+    async function validateCaptureStream(stream) {
+      if (!stream) {
+        console.log('❌ No stream provided for validation');
+        return false;
+      }
+
+      try {
+        console.log('🔍 Validating capture stream...');
+        
+        // Create test video element
+        const testVideo = document.createElement('video');
+        testVideo.srcObject = stream;
+        testVideo.muted = true;
+        testVideo.playsInline = true;
+
+        // Wait for video to load
+        await new Promise((resolve, reject) => {
+          testVideo.onloadedmetadata = resolve;
+          testVideo.onerror = reject;
+          setTimeout(reject, 3000); // 3 second timeout
+          testVideo.play();
+        });
+
+        // Test if video dimensions are valid
+        if (testVideo.videoWidth === 0 || testVideo.videoHeight === 0) {
+          console.log('❌ Stream has invalid dimensions');
+          testVideo.remove();
+          return false;
+        }
+
+        // Create test canvas to check if content is captured
+        const testCanvas = document.createElement('canvas');
+        const testCtx = testCanvas.getContext('2d');
+        testCanvas.width = 100;
+        testCanvas.height = 100;
+
+        // Draw a small sample from the video
+        testCtx.drawImage(testVideo, 0, 0, 100, 100);
+        
+        // Get image data to check if it's not completely black
+        const imageData = testCtx.getImageData(0, 0, 100, 100);
+        const data = imageData.data;
+        
+        // Check if there are any non-black pixels
+        let hasContent = false;
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          
+          // If any pixel is not pure black, we have content
+          if (r > 10 || g > 10 || b > 10) {
+            hasContent = true;
+            break;
+          }
+        }
+
+        // Clean up test elements
+        testVideo.remove();
+        testCanvas.remove();
+
+        if (!hasContent) {
+          console.log('❌ Stream appears to be capturing black/empty content');
+          return false;
+        }
+
+        console.log('✅ Stream validation successful - content is being captured');
+        return true;
+
+      } catch (error) {
+        console.error('❌ Stream validation failed:', error);
+        return false;
+      }
+    }
+
+    async function ensureValidCaptureStream() {
+      console.log('🔍 Checking capture stream validity...');
+      
+      // Check if we have an existing stream
+      if (globalCaptureStream && streamExpiryTime && Date.now() < streamExpiryTime) {
+        console.log('📹 Testing existing stream...');
+        const isValid = await validateCaptureStream(globalCaptureStream);
+        
+        if (isValid) {
+          console.log('✅ Existing stream is valid and working');
+          return globalCaptureStream;
+        } else {
+          console.log('❌ Existing stream is invalid, requesting new permission');
+          // Clean up invalid stream
+          if (globalCaptureStream) {
+            globalCaptureStream.getTracks().forEach(track => track.stop());
+            globalCaptureStream = null;
+            streamExpiryTime = null;
+          }
+        }
+      }
+
+      // Request new capture permission
+      console.log('🎯 Requesting new screen capture permission...');
+      
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: {
+            mediaSource: 'screen',
+            width: { ideal: 4096, max: 8192 },
+            height: { ideal: 2304, max: 4608 },
+            frameRate: { ideal: 60, max: 60 },
+            cursor: 'never'
+          },
+          audio: false,
+          preferCurrentTab: true
+        });
+
+        // Validate the new stream
+        const isValid = await validateCaptureStream(stream);
+        
+        if (!isValid) {
+          console.log('❌ New stream validation failed');
+          stream.getTracks().forEach(track => track.stop());
+          throw new Error('Screen capture is not working properly. Please ensure you selected the correct screen/window.');
+        }
+
+        // Store valid stream
+        globalCaptureStream = stream;
+        streamExpiryTime = Date.now() + STREAM_DURATION;
+        
+        console.log('✅ New valid capture stream obtained and cached');
+        return stream;
+
+      } catch (error) {
+        console.error('❌ Failed to get valid capture stream:', error);
+        throw error;
+      }
+    }
+    
+    // === SCREEN RECORDING SYSTEM ===
+    let isRecording = false;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordingStartTime = null;
+
+    // === CURSOR MANAGEMENT FUNCTIONS ===
+    async function lockPointer() {
+      if (document.pointerLockElement === document.body) return;
+      try {
+        await document.body.requestPointerLock({ unadjustedMovement: true });
+      } catch (e) {
+        // Some browsers don't support promise version; fall back to sync
+        document.body.requestPointerLock();
+      }
+      // Wait until pointer lock actually established
+      return new Promise((resolve) => {
+        const check = setInterval(() => {
+          if (document.pointerLockElement === document.body) {
+            clearInterval(check);
+            resolve();
+          }
+        }, 10);
+      });
+    }
+
+    function unlockPointer() {
+      if (document.pointerLockElement) {
+        document.exitPointerLock();
+      }
+    }
+
+    // === CUSTOM CURSOR OVERLAY FUNCTIONS ===
+    let customCursor = null;
+    let cursorTracker = null;
+
+        function createCustomCursor() {
+      // Remove existing custom cursor if any
+      removeCustomCursor();
+      
+      // Create cursor container
+      const cursorContainer = document.createElement('div');
+      cursorContainer.id = 'recording-cursor-container';
+      cursorContainer.style.cssText = `
+        position: fixed;
+        width: 18px;
+        height: 18px;
+        pointer-events: none;
+        z-index: 999999;
+        transform: translate(-50%, -50%);
+        will-change: transform;
+      `;
+      
+             // Create base layer (dynamic color)
+       const baseLayer = document.createElement('div');
+       baseLayer.id = 'cursor-base-layer';
+       baseLayer.style.cssText = `
+         position: absolute;
+         width: 18px;
+         height: 18px;
+         border-radius: 50%;
+         background-color: rgba(0, 0, 0, 0.1);
+         transform: translate(-50%, -50%);
+         top: 50%;
+         left: 50%;
+       `;
+      
+             // Create main cursor layer
+       customCursor = document.createElement('div');
+       customCursor.id = 'recording-custom-cursor';
+       customCursor.style.cssText = `
+         position: absolute;
+         width: 14px;
+         height: 14px;
+         border-radius: 50%;
+         background-color: rgba(255, 255, 255, 0.4);
+         border: 1px solid rgba(255, 255, 255, 0.8);
+         backdrop-filter: blur(1px);
+         box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+         transform: translate(-50%, -50%);
+         top: 50%;
+         left: 50%;
+         transition: transform 0.08s ease-out, background-color 0.08s ease-out;
+       `;
+      
+      // Assemble cursor
+      cursorContainer.appendChild(baseLayer);
+      cursorContainer.appendChild(customCursor);
+      document.body.appendChild(cursorContainer);
+      
+      // Variables for smooth movement
+      let currentX = 0;
+      let currentY = 0;
+      let targetX = 0;
+      let targetY = 0;
+      let isClicking = false;
+      let animationId = null;
+      
+      // Canvas for color sampling
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 1;
+      canvas.height = 1;
+      
+             // Smooth animation loop
+       function animateCursor() {
+         // Much more responsive interpolation for better sync
+         const lerp = 0.8; // Higher value for better cursor tracking
+         currentX += (targetX - currentX) * lerp;
+         currentY += (targetY - currentY) * lerp;
+         
+         cursorContainer.style.left = `${currentX}px`;
+         cursorContainer.style.top = `${currentY}px`;
+         
+         animationId = requestAnimationFrame(animateCursor);
+       }
+      
+      // Sample background color and adjust base layer
+      function updateBaseColor(x, y) {
+        try {
+          // Take a screenshot of a small area around cursor
+          const element = document.elementFromPoint(x, y);
+          if (element) {
+            const computedStyle = window.getComputedStyle(element);
+            const bgColor = computedStyle.backgroundColor;
+            
+            // Calculate brightness from background
+            let brightness = 128; // default middle value
+            
+            if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
+              const rgbMatch = bgColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+              if (rgbMatch) {
+                const r = parseInt(rgbMatch[1]);
+                const g = parseInt(rgbMatch[2]);
+                const b = parseInt(rgbMatch[3]);
+                brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+              }
+            }
+            
+                         // Choose contrasting base color
+             if (brightness > 128) {
+               // Light background - use dark base
+               baseLayer.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+             } else {
+               // Dark background - use light base
+               baseLayer.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+             }
+          }
+                 } catch (e) {
+           // Fallback to default dark base
+           baseLayer.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+         }
+      }
+      
+      // Track mouse movement
+      cursorTracker = (e) => {
+        if (cursorContainer) {
+          targetX = e.clientX;
+          targetY = e.clientY;
+          
+          // Update base color based on background
+          updateBaseColor(e.clientX, e.clientY);
+          
+          // Add click effect
+          if (e.type === 'mousedown' && !isClicking) {
+            isClicking = true;
+            customCursor.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            customCursor.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+            baseLayer.style.transform = 'translate(-50%, -50%) scale(1.1)';
+          } else if (e.type === 'mouseup' && isClicking) {
+            isClicking = false;
+            customCursor.style.transform = 'translate(-50%, -50%) scale(1)';
+            customCursor.style.backgroundColor = 'rgba(255, 255, 255, 0.4)';
+            baseLayer.style.transform = 'translate(-50%, -50%) scale(1)';
+          }
+        }
+      };
+      
+      // Initialize position
+      targetX = currentX = window.innerWidth / 2;
+      targetY = currentY = window.innerHeight / 2;
+      
+      // Start animation loop
+      animateCursor();
+      
+      // Add event listeners
+      document.addEventListener('mousemove', cursorTracker);
+      document.addEventListener('mousedown', cursorTracker);
+      document.addEventListener('mouseup', cursorTracker);
+      
+      // Store animation ID for cleanup
+      cursorContainer.animationId = animationId;
+      
+      console.log('✨ Smooth adaptive cursor created for recording');
+    }
+
+    function removeCustomCursor() {
+      // Remove cursor container and all its children
+      const cursorContainer = document.getElementById('recording-cursor-container');
+      if (cursorContainer) {
+        // Stop animation loop
+        if (cursorContainer.animationId) {
+          cancelAnimationFrame(cursorContainer.animationId);
+        }
+        cursorContainer.remove();
+      }
+      
+      if (customCursor) {
+        customCursor = null;
+      }
+      
+      if (cursorTracker) {
+        document.removeEventListener('mousemove', cursorTracker);
+        document.removeEventListener('mousedown', cursorTracker);
+        document.removeEventListener('mouseup', cursorTracker);
+        cursorTracker = null;
+      }
+    }
+
+    function hideCursor() {
+      console.log('🫥 Hiding cursor and showing custom cursor for capture');
+      
+      // Remove any existing cursor hide style
+      const existingStyle = document.getElementById('hide-cursor-temp');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+      
+      // Create comprehensive cursor hide style
+      const tempStyle = document.createElement('style');
+      tempStyle.id = 'hide-cursor-temp';
+      tempStyle.textContent = `
+        *, *:hover, *:active, *:focus, *:visited, *:link,
+        *::before, *::after,
+        *::before:hover, *::after:hover,
+        html, body, div, span, p, h1, h2, h3, h4, h5, h6,
+        button, input, textarea, select, a, img, canvas, svg {
+          cursor: none !important;
+          pointer-events: auto !important;
+        }
+        
+        /* Override all specific cursor types */
+        [style*="cursor"] {
+          cursor: none !important;
+        }
+        
+        /* Target common interactive elements specifically */
+        button:hover, a:hover, input:hover, textarea:hover,
+        .clickable:hover, .hover-area:hover, .generate-card-hover:hover {
+          cursor: none !important;
+        }
+        
+        /* Override CSS classes that might set cursors */
+        .pointer, .grab, .text, .crosshair, .move, .help,
+        .wait, .progress, .not-allowed, .copy, .alias,
+        .context-menu, .cell, .vertical-text, .zoom-in, .zoom-out {
+          cursor: none !important;
+        }
+      `;
+      document.head.appendChild(tempStyle);
+      
+      // Also set body cursor directly with multiple methods
+      document.body.style.cursor = 'none';
+      document.documentElement.style.cursor = 'none';
+      
+      // Force immediate cursor update
+      document.body.style.pointerEvents = 'auto';
+      setTimeout(() => {
+        document.body.style.cursor = 'none';
+        document.documentElement.style.cursor = 'none';
+      }, 1);
+      
+      // Create custom cursor overlay
+      createCustomCursor();
+    }
+
+    function showCursor() {
+      console.log('👆 Restoring cursor after capture');
+      
+      // Remove custom cursor overlay
+      removeCustomCursor();
+      
+      // Remove cursor hide style
+      const tempStyleElement = document.getElementById('hide-cursor-temp');
+      if (tempStyleElement) {
+        tempStyleElement.remove();
+      }
+      
+      // Reset all cursor properties
+      document.body.style.cursor = '';
+      document.documentElement.style.cursor = '';
+      document.body.style.pointerEvents = '';
+      
+      // Force comprehensive cursor refresh
+      setTimeout(() => {
+        document.body.style.cursor = 'auto';
+        document.documentElement.style.cursor = 'auto';
+        setTimeout(() => {
+          document.body.style.cursor = '';
+          document.documentElement.style.cursor = '';
+          
+          // Final refresh to ensure cursor is fully restored
+          setTimeout(() => {
+            document.body.style.cursor = 'default';
+            setTimeout(() => {
+              document.body.style.cursor = '';
+            }, 10);
+          }, 10);
+        }, 10);
+      }, 10);
+    }
+
+    // === SCREEN RECORDING FUNCTIONS ===
+    async function startScreenRecording() {
+      if (isRecording) {
+        console.log('⚠️ Recording already in progress');
+        return;
+      }
+      
+      console.log('🎬 Starting high-resolution screen recording...');
+      
+      // Calculate crop area for user guidance
+      const cardElem = document.querySelector('.card');
+      const layoutElem = document.querySelector('.layout-3');
+      
+      if (!cardElem) {
+        throw new Error('Card element not found');
+      }
+      
+      // Calculate combined bounding box for guidance
+      const cardRect = cardElem.getBoundingClientRect();
+      const layoutRect = layoutElem ? layoutElem.getBoundingClientRect() : cardRect;
+      
+      // Add padding but ensure we don't go outside viewport
+      const padding = 30;
+      const left = Math.max(0, Math.min(cardRect.left, layoutRect.left) - padding);
+      const top = Math.max(0, Math.min(cardRect.top, layoutRect.top) - padding);
+      const right = Math.min(window.innerWidth, Math.max(cardRect.right, layoutRect.right) + padding);
+      const bottom = Math.min(window.innerHeight, Math.max(cardRect.bottom, layoutRect.bottom) + padding);
+      
+      const captureWidth = right - left;
+      const captureHeight = bottom - top;
+      
+      console.log(`📐 Target crop area: ${captureWidth.toFixed(0)}x${captureHeight.toFixed(0)} at (${left.toFixed(0)},${top.toFixed(0)})`);
+      console.log('💡 When browser asks for screen sharing: Select specific browser window for best cropping');
+      
+      // Hide titles during recording for cleaner video
+                      const previewTitle = document.querySelector('.preview-title');
+        const previewTitle2 = document.querySelector('.preview-title-2');
+        const editTitle = document.querySelector('.edit-title');
+        const editTitle2 = document.querySelector('.edit-title-2');
+        const shareTitle = document.querySelector('.share-title');
+        const shareTitle2 = document.querySelector('.share-title-2');
+        
+        if(previewTitle) previewTitle.style.display = 'none';
+        if(previewTitle2) previewTitle2.style.display = 'none';
+        if(editTitle) editTitle.style.display = 'none';
+        if(editTitle2) editTitle2.style.display = 'none';
+        if(shareTitle) shareTitle.style.display = 'none';
+        if(shareTitle2) shareTitle2.style.display = 'none';
+      
+      // Hide cursor during recording
+      hideCursor();
+      
+      // Store crop coordinates for post-processing
+      window.recordingCropArea = {
+        left, top, width: captureWidth, height: captureHeight,
+        screenWidth: window.innerWidth,
+        screenHeight: window.innerHeight
+      };
+      
+      try {
+        // Use the validation system to ensure we have a working stream
+        console.log('🎬 Ensuring valid capture stream for recording...');
+        const stream = await ensureValidCaptureStream();
+        
+        console.log('💡 For best results: Select "Chrome Tab" option and position the card prominently on screen');
+        
+        // Configure MediaRecorder for high quality
+        const options = {
+          mimeType: 'video/webm;codecs=vp9', // High-quality codec
+          videoBitsPerSecond: 25000000 // 25 Mbps for maximum quality without processing overhead
+        };
+        
+        // Fallback if VP9 not supported
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          options.mimeType = 'video/webm;codecs=vp8';
+          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            options.mimeType = 'video/webm';
+          }
+        }
+        
+        mediaRecorder = new MediaRecorder(stream, options);
+        recordedChunks = [];
+        recordingStartTime = Date.now();
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+        
+        mediaRecorder.onstop = () => {
+          console.log('🎬 Recording stopped, processing video...');
+          cropAndDownloadRecording();
+        };
+        
+        mediaRecorder.start(100); // Collect data every 100ms for smoother recording
+        isRecording = true;
+        
+        // Add visual recording indicator
+        document.body.classList.add('screen-recording');
+        
+
+        
+        console.log('🔴 Screen recording started with high quality settings');
+        console.log(`📹 Codec: ${options.mimeType}, Bitrate: ${options.videoBitsPerSecond / 1000000}Mbps`);
+        
+        // Visual feedback
+        // showRecordingIndicator(); // Removed recording indicator
+        
+      } catch (error) {
+        console.error('❌ Failed to start recording:', error);
+        
+        // Remove visual recording indicator on error
+        document.body.classList.remove('screen-recording');
+        
+        // Restore titles
+        if(previewTitle) previewTitle.style.display = '';
+        if(previewTitle2) previewTitle2.style.display = '';
+        if(editTitle) editTitle.style.display = '';
+        if(editTitle2) editTitle2.style.display = '';
+        if(shareTitle) shareTitle.style.display = '';
+        if(shareTitle2) shareTitle2.style.display = '';
+        showCursor();
+        
+        if (error.name === 'NotAllowedError') {
+          alert('Screen recording permission denied. Please allow screen sharing and try again.');
+        } else {
+          alert('Failed to start recording: ' + error.message);
+        }
+      }
+    }
+    
+    function stopScreenRecording() {
+      if (!isRecording || !mediaRecorder) {
+        console.log('⚠️ No recording in progress');
+        return;
+      }
+      
+      console.log('⏹️ Stopping screen recording...');
+      
+      mediaRecorder.stop();
+      
+      // Stop all tracks
+      if (mediaRecorder.stream) {
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      }
+      
+      isRecording = false;
+      
+      // Remove visual recording indicator
+      document.body.classList.remove('screen-recording');
+      
+
+      
+      // hideRecordingIndicator(); // Removed recording indicator
+      
+      // Restore titles and cursor
+      const previewTitle = document.querySelector('.preview-title');
+      const previewTitle2 = document.querySelector('.preview-title-2');
+      const editTitle = document.querySelector('.edit-title');
+      const editTitle2 = document.querySelector('.edit-title-2');
+      const shareTitle = document.querySelector('.share-title');
+      const shareTitle2 = document.querySelector('.share-title-2');
+      
+      if(previewTitle) previewTitle.style.display = '';
+      if(previewTitle2) previewTitle2.style.display = '';
+      if(editTitle) editTitle.style.display = '';
+      if(editTitle2) editTitle2.style.display = '';
+      if(shareTitle) shareTitle.style.display = '';
+      if(shareTitle2) shareTitle2.style.display = '';
+      showCursor();
+    }
+    
+    function cropAndDownloadRecording() {
+      if (recordedChunks.length === 0) {
+        console.log('⚠️ No recorded data to download');
+        return;
+      }
+      
+      console.log('✂️ Cropping recorded video...');
+      
+      // Show loading bar for video processing
+      showSaveClipLoadingBar('Preparing video data...');
+      updateSaveClipLoadingBar(10, 'Creating video blob...');
+      
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const videoUrl = URL.createObjectURL(blob);
+      
+              updateSaveClipLoadingBar(20, 'Analyzing recording...');
+      
+      // Check if we have crop area stored
+      if (window.recordingCropArea) {
+        cropVideoEfficiently(videoUrl, blob);
+      } else {
+        // Fallback to direct download
+        updateSaveClipLoadingBar(100, 'Download ready!');
+        setTimeout(() => {
+          hideSaveClipLoadingBar();
+          downloadDirectly(blob);
+        }, 500);
+      }
+    }
+    
+    function cropVideoEfficiently(videoUrl, originalBlob) {
+      const video = document.createElement('video');
+      video.src = videoUrl;
+      video.muted = true;
+      video.playsInline = true;
+      
+                updateSaveClipLoadingBar(30, 'Loading video metadata...');
+      
+      video.onloadedmetadata = () => {
+        try {
+          const cropArea = window.recordingCropArea;
+          
+          updateSaveClipLoadingBar(40, 'Calculating crop dimensions...');
+          
+          // Calculate scaling from screen to video coordinates
+          const scaleX = video.videoWidth / cropArea.screenWidth;
+          const scaleY = video.videoHeight / cropArea.screenHeight;
+          
+          // Calculate crop coordinates in video space
+          const cropX = cropArea.left * scaleX;
+          const cropY = cropArea.top * scaleY;
+          const cropWidth = cropArea.width * scaleX;
+          const cropHeight = cropArea.height * scaleY;
+          
+          console.log(`✂️ Crop: ${cropWidth.toFixed(0)}x${cropHeight.toFixed(0)} from ${video.videoWidth}x${video.videoHeight}`);
+          
+          updateSaveClipLoadingBar(50, 'Setting up processing canvas...');
+          
+          // Create optimized canvas with moderate scaling
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d', { 
+            alpha: false, 
+            desynchronized: true,
+            willReadFrequently: false 
+          });
+          
+          // Use 3x scaling for good quality without performance hit
+          const outputScale = 3;
+          canvas.width = cropWidth * outputScale;
+          canvas.height = cropHeight * outputScale;
+          
+          // Optimize rendering
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          
+          updateSaveClipLoadingBar(60, 'Initializing video recorder...');
+          
+          // Single-pass video processing with frame skipping for performance
+          const outputStream = canvas.captureStream(30); // 30fps output
+          const recorder = new MediaRecorder(outputStream, {
+            mimeType: 'video/webm;codecs=vp9',
+            videoBitsPerSecond: 20000000
+          });
+          
+          const croppedChunks = [];
+          recorder.ondataavailable = (e) => {
+            if (e.data.size > 0) croppedChunks.push(e.data);
+          };
+          
+                      recorder.onstop = () => {
+              updateSaveClipLoadingBar(95, 'Finalizing video...');
+              const croppedBlob = new Blob(croppedChunks, { type: 'video/webm' });
+              downloadCroppedVideo(croppedBlob);
+              URL.revokeObjectURL(videoUrl);
+            };
+          
+          // Start recording canvas
+          recorder.start();
+          
+                      updateSaveClipLoadingBar(70, 'Processing video frames...');
+          
+          // Efficient frame processing with throttling
+          let frameCount = 0;
+          const totalFrames = video.duration * 30; // Estimate total frames
+          
+          const drawFrame = () => {
+            if (video.readyState >= 2) {
+              // Process every frame for smoothness
+              ctx.drawImage(
+                video,
+                cropX, cropY, cropWidth, cropHeight,
+                0, 0, canvas.width, canvas.height
+              );
+              frameCount++;
+              
+                              // Update progress based on frame processing
+                if (totalFrames > 0) {
+                  const frameProgress = Math.min(90, 70 + (frameCount / totalFrames) * 20);
+                  updateSaveClipLoadingBar(frameProgress, `Processing frame ${frameCount}...`);
+                }
+            }
+            
+            if (video.ended) {
+              recorder.stop();
+              console.log(`🎬 Processed ${frameCount} frames`);
+            } else {
+              requestAnimationFrame(drawFrame);
+            }
+          };
+          
+          // Start playback and processing
+          video.currentTime = 0;
+          video.play();
+          drawFrame();
+          
+        } catch (error) {
+          console.error('❌ Cropping failed:', error);
+          hideLoadingBar();
+          downloadDirectly(originalBlob);
+          URL.revokeObjectURL(videoUrl);
+        }
+      };
+      
+      video.onerror = () => {
+        console.error('❌ Video loading failed');
+        hideLoadingBar();
+        downloadDirectly(originalBlob);
+        URL.revokeObjectURL(videoUrl);
+      };
+    }
+    
+    function downloadCroppedVideo(blob) {
+      updateSaveClipLoadingBar(100, 'Download ready!');
+      
+      const duration = recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0;
+      const authorName = document.querySelector('.author-input').value.trim() || 'card';
+      const sanitizedName = authorName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+      
+      const link = document.createElement('a');
+      link.download = `emotion_card_recording_cropped_${sanitizedName}_${duration}s_${timestamp}.webm`;
+      link.href = URL.createObjectURL(blob);
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      console.log(`✅ Cropped recording saved: ${duration}s, ${(blob.size / 1024 / 1024).toFixed(2)}MB`);
+      
+      // Hide loading bar after successful download
+      setTimeout(() => {
+        hideSaveClipLoadingBar();
+      }, 800);
+    }
+    
+    function downloadDirectly(blob) {
+      // Generate filename with duration
+      const duration = recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0;
+      const authorName = document.querySelector('.author-input').value.trim() || 'card';
+      const sanitizedName = authorName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+      
+      const link = document.createElement('a');
+      link.download = `emotion_card_recording_${sanitizedName}_${duration}s_${timestamp}.webm`;
+      link.href = URL.createObjectURL(blob);
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      
+      console.log(`✅ Recording saved: ${duration}s, ${(blob.size / 1024 / 1024).toFixed(2)}MB`);
+    }
+
+    function showRecordingIndicator() {
+      // Create a simple recording indicator
+      const indicator = document.createElement('div');
+      indicator.id = 'recording-indicator';
+      indicator.innerHTML = '🔴 REC';
+      indicator.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 0, 0, 0.9);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 14px;
+        font-weight: bold;
+        z-index: 9999;
+        animation: pulse 1s infinite;
+      `;
+      
+      // Add pulse animation
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+      `;
+      document.head.appendChild(style);
+      document.body.appendChild(indicator);
+    }
+    
+    function hideRecordingIndicator() {
+      const indicator = document.getElementById('recording-indicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+
+    // === WHATSAPP SHARING FUNCTIONALITY ===
+    async function shareToWhatsApp() {
+      console.log('📱 Starting WhatsApp share...');
+      
+      try {
+        // Show loading bar
+        showLoadingBar('Preparing Share', 'Capturing image for WhatsApp...');
+        
+        // Hide cursor during capture for cleaner image (titles already removed)
+        
+        // Hide mouse cursor during capture
+        hideCursor();
+        await lockPointer();
+        
+        updateLoadingBar(10, 'Hiding interface elements...');
+        
+        // Get the card and layout-3 elements
+        const cardElem = document.querySelector('.card');
+        const layoutElem = document.querySelector('.layout-3');
+        
+        if (!cardElem) {
+          throw new Error('Card element not found');
+        }
+
+        console.log('📍 Found card element, ensuring valid capture stream...');
+        
+        updateLoadingBar(20, 'Validating capture stream...');
+        
+        // Use the new validation system
+        const stream = await ensureValidCaptureStream();
+        
+        updateLoadingBar(40, 'Valid stream confirmed...');
+
+        // Create video element to capture the stream
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.muted = true;
+        video.playsInline = true;
+        
+        updateLoadingBar(50, 'Loading video stream...');
+        
+        await new Promise((resolve, reject) => {
+          video.onloadedmetadata = resolve;
+          video.onerror = reject;
+          video.play();
+        });
+
+        // Extra small delay to guarantee the cursor-hide CSS has taken effect
+        await new Promise(r => setTimeout(r, 150));
+
+        console.log('📺 Video loaded, calculating precise crop area...');
+        updateLoadingBar(60, 'Calculating crop area...');
+        
+        // Calculate combined bounding box of card and layout-3
+        const cardRect = cardElem.getBoundingClientRect();
+        const layoutRect = layoutElem ? layoutElem.getBoundingClientRect() : cardRect;
+
+        // Add padding but ensure we don't go outside viewport
+        const padding = 30;
+        const left = Math.max(0, Math.min(cardRect.left, layoutRect.left) - padding);
+        const top = Math.max(0, Math.min(cardRect.top, layoutRect.top) - padding);
+        const right = Math.min(window.innerWidth, Math.max(cardRect.right, layoutRect.right) + padding);
+        const bottom = Math.min(window.innerHeight, Math.max(cardRect.bottom, layoutRect.bottom) + padding);
+
+        const captureWidth = right - left;
+        const captureHeight = bottom - top;
+
+        console.log(`📐 Capture area: ${captureWidth}x${captureHeight} at (${left},${top})`);
+        console.log(`📺 Video resolution: ${video.videoWidth}x${video.videoHeight}`);
+        
+        // Calculate precise scaling factors
+        const scaleX = video.videoWidth / window.innerWidth;
+        const scaleY = video.videoHeight / window.innerHeight;
+        
+        console.log(`📏 Scale factors: X=${scaleX.toFixed(3)}, Y=${scaleY.toFixed(3)}`);
+
+        // Map screen coordinates to video coordinates
+        const videoLeft = left * scaleX;
+        const videoTop = top * scaleY;
+        const videoWidth = captureWidth * scaleX;
+        const videoHeight = captureHeight * scaleY;
+
+        console.log(`🎥 Video crop: ${videoWidth.toFixed(1)}x${videoHeight.toFixed(1)} at (${videoLeft.toFixed(1)},${videoTop.toFixed(1)})`);
+
+        updateLoadingBar(70, 'Creating canvas for WhatsApp...');
+
+        // Create canvas optimized for sharing (smaller file size for WhatsApp)
+        const outputScale = 2; // Reduced scale for faster sharing and smaller file size
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', {
+          alpha: false,
+          desynchronized: true,
+          willReadFrequently: false
+        });
+
+        canvas.width = Math.round(captureWidth * outputScale);
+        canvas.height = Math.round(captureHeight * outputScale);
+
+        console.log(`🖼️ Output canvas: ${canvas.width}x${canvas.height}`);
+
+        updateLoadingBar(80, 'Rendering image for sharing...');
+
+        // Configure high-quality rendering
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Draw the cropped video frame to canvas
+        ctx.drawImage(
+          video,
+          videoLeft, videoTop, videoWidth, videoHeight,
+          0, 0, canvas.width, canvas.height
+        );
+
+        updateLoadingBar(90, 'Preparing for WhatsApp...');
+
+        // Convert canvas to blob for sharing
+        const blob = await new Promise(resolve => {
+          canvas.toBlob(resolve, 'image/jpeg', 0.9); // JPEG with 90% quality for smaller file size
+        });
+
+        updateLoadingBar(95, 'Opening WhatsApp...');
+
+        // Check if Web Share API is available and supports files
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'test.jpg')] })) {
+          console.log('📱 Using Web Share API for WhatsApp');
+          
+          // Create file for sharing
+          const authorName = document.querySelector('.author-input').value.trim() || 'emotion';
+          const file = new File([blob], `emotion_card_${authorName}.jpg`, { type: 'image/jpeg' });
+          
+          await navigator.share({
+            title: 'Emotion Card',
+            text: `Check out this emotion card I created! 🎨✨`,
+            files: [file]
+          });
+          
+          updateLoadingBar(100, 'Shared successfully!');
+          
+        } else {
+          console.log('📱 Using WhatsApp URL scheme fallback');
+          
+          // Detect if user is on mobile device
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          
+          // Fallback: Convert to base64 and use appropriate WhatsApp URL
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64Data = reader.result;
+            const message = `Check out this emotion card I created! 🎨✨\n\nGenerated with AI-powered emotion analysis.`;
+            
+            let whatsappUrl;
+            if (isMobile) {
+              // Use mobile WhatsApp app URL scheme
+              whatsappUrl = `whatsapp://send?text=${encodeURIComponent(message)}`;
+            } else {
+              // Use WhatsApp Web
+              whatsappUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+            }
+            
+            // Create a temporary link to download the image alongside WhatsApp sharing
+            const link = document.createElement('a');
+            link.download = `emotion_card_${new Date().toISOString().slice(0, 10)}.jpg`;
+            link.href = base64Data;
+            
+            // Try to open WhatsApp
+            const whatsappWindow = window.open(whatsappUrl, '_blank');
+            
+            // Auto-download the image so user can manually share it
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            if (isMobile) {
+              updateLoadingBar(100, 'WhatsApp app opened! Image downloaded.');
+              console.log('📱 WhatsApp mobile app opened and image downloaded for manual sharing');
+            } else {
+              updateLoadingBar(100, 'WhatsApp Web opened! Image downloaded.');
+              console.log('📱 WhatsApp Web opened and image downloaded for manual sharing');
+            }
+            
+            // If WhatsApp app fails to open on mobile, fallback to Web
+            if (isMobile && (!whatsappWindow || whatsappWindow.closed)) {
+              setTimeout(() => {
+                console.log('📱 Falling back to WhatsApp Web...');
+                window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
+              }, 1000);
+            }
+          };
+          
+          reader.readAsDataURL(blob);
+        }
+
+        console.log('✅ WhatsApp sharing completed successfully!');
+        
+        // Small delay to show completion before hiding
+        setTimeout(() => {
+          hideLoadingBar();
+        }, 1200);
+        
+        // Restore titles and cursor
+        if(previewTitle) previewTitle.style.display = '';
+        if(previewTitle2) previewTitle2.style.display = '';
+        if(editTitle) editTitle.style.display = '';
+        if(editTitle2) editTitle2.style.display = '';
+        unlockPointer();
+        
+        // Restore mouse cursor
+        showCursor();
+
+      } catch (error) {
+        console.error('❌ WhatsApp sharing failed:', error);
+        
+        // Hide loading bar on error
+        hideLoadingBar();
+        
+        // Restore titles and cursor after error
+        const previewTitle = document.querySelector('.preview-title');
+        const previewTitle2 = document.querySelector('.preview-title-2');
+        const editTitle = document.querySelector('.edit-title');
+        const editTitle2 = document.querySelector('.edit-title-2');
+        if(previewTitle) previewTitle.style.display = '';
+        if(previewTitle2) previewTitle2.style.display = '';
+        if(editTitle) editTitle.style.display = '';
+        if(editTitle2) editTitle2.style.display = '';
+        unlockPointer();
+        
+        // Restore mouse cursor
+        showCursor();
+        
+        if (error.name === 'NotAllowedError') {
+          alert('Screen capture permission denied. Please allow screen sharing to share to WhatsApp.\n\nTip: Look for "Chrome Tab" option in the sharing dialog for best quality.');
+        } else if (error.name === 'AbortError') {
+          console.log('🤷‍♂️ User cancelled WhatsApp sharing');
+          // Don't show error for user cancellation
+        } else if (error.name === 'NotSupportedError') {
+          alert('WhatsApp sharing not supported in this browser. Please use Chrome, Firefox, or Edge on mobile.');
+        } else {
+          alert('WhatsApp sharing failed: ' + error.message + '\n\nPlease try:\n1. Using a mobile device for best WhatsApp integration\n2. Refreshing the page\n3. Manual screenshot and WhatsApp share');
+        }
+      }
+    }
+
+    // === LOADING BAR FUNCTIONALITY (DISABLED) ===
+    function showLoadingBar(title = 'Processing...', text = 'Preparing capture...') {
+      // Loading bar disabled - no action taken
+    }
+    
+    function updateLoadingBar(progress, text = '') {
+      // Loading bar disabled - no action taken
+    }
+    
+    function hideLoadingBar() {
+      // Loading bar disabled - no action taken
+    }
+    
+    // === SAVE CLIP LOADING BAR FUNCTIONALITY ===
+    function showSaveClipLoadingBar(text = 'Processing...') {
+      const loadingBars = document.querySelectorAll('.save-clip-loading-bar');
+      loadingBars.forEach(bar => {
+        bar.classList.add('active');
+        const textEl = bar.querySelector('.loading-bar-text');
+        if (textEl) textEl.textContent = text;
+        const fillEl = bar.querySelector('.loading-bar-fill');
+        if (fillEl) fillEl.style.width = '0%';
+      });
+    }
+    
+    function updateSaveClipLoadingBar(progress, text = '') {
+      const loadingBars = document.querySelectorAll('.save-clip-loading-bar');
+      loadingBars.forEach(bar => {
+        const fillEl = bar.querySelector('.loading-bar-fill');
+        const textEl = bar.querySelector('.loading-bar-text');
+        if (fillEl) fillEl.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+        if (textEl && text) textEl.textContent = text;
+      });
+    }
+    
+    function hideSaveClipLoadingBar() {
+      const loadingBars = document.querySelectorAll('.save-clip-loading-bar');
+      loadingBars.forEach(bar => {
+        bar.classList.remove('active');
+      });
+    }
+
+    // === DOWNLOAD IMAGE FUNCTIONALITY ===
+    async function downloadCardAsImage() {
+      console.log('🎨 Starting high-fidelity screen capture...');
+      
+      // Show loading bar
+      showLoadingBar('Capturing Screen', 'Initializing capture...');
+      
+              // Hide titles and cursor during capture for cleaner image
+        const previewTitle = document.querySelector('.preview-title');
+        const previewTitle2 = document.querySelector('.preview-title-2');
+        const editTitle = document.querySelector('.edit-title');
+        const editTitle2 = document.querySelector('.edit-title-2');
+        
+        if(previewTitle) previewTitle.style.display = 'none';
+        if(previewTitle2) previewTitle2.style.display = 'none';
+        if(editTitle) editTitle.style.display = 'none';
+        if(editTitle2) editTitle2.style.display = 'none';
+        
+        // Hide mouse cursor during capture
+        hideCursor();
+        await lockPointer();
+        
+        updateLoadingBar(10, 'Hiding interface elements...');
+      
+      try {
+        // Get the card and layout-3 elements
+        const cardElem = document.querySelector('.card');
+        const layoutElem = document.querySelector('.layout-3');
+        
+        if (!cardElem) {
+          throw new Error('Card element not found');
+        }
+
+        console.log('📍 Found card element, ensuring valid capture stream...');
+        
+        updateLoadingBar(20, 'Validating capture stream...');
+        
+        // Use the new validation system
+        const stream = await ensureValidCaptureStream();
+        
+        updateLoadingBar(40, 'Valid stream confirmed...');
+
+        // Create video element to capture the stream
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.muted = true;
+        video.playsInline = true;
+        
+        updateLoadingBar(50, 'Loading video stream...');
+        
+        await new Promise((resolve, reject) => {
+          video.onloadedmetadata = resolve;
+          video.onerror = reject;
+          video.play();
+        });
+
+        // Extra small delay to guarantee the cursor-hide CSS has taken effect
+        await new Promise(r => setTimeout(r, 150));
+
+        console.log('📺 Video loaded, calculating precise crop area...');
+        updateLoadingBar(60, 'Calculating crop area...');
+        
+        // Calculate combined bounding box of card and layout-3
+        const cardRect = cardElem.getBoundingClientRect();
+        const layoutRect = layoutElem ? layoutElem.getBoundingClientRect() : cardRect;
+
+        // Add padding but ensure we don't go outside viewport
+        const padding = 30;
+        const left = Math.max(0, Math.min(cardRect.left, layoutRect.left) - padding);
+        const top = Math.max(0, Math.min(cardRect.top, layoutRect.top) - padding);
+        const right = Math.min(window.innerWidth, Math.max(cardRect.right, layoutRect.right) + padding);
+        const bottom = Math.min(window.innerHeight, Math.max(cardRect.bottom, layoutRect.bottom) + padding);
+
+        const captureWidth = right - left;
+        const captureHeight = bottom - top;
+
+        console.log(`📐 Capture area: ${captureWidth}x${captureHeight} at (${left},${top})`);
+        console.log(`📺 Video resolution: ${video.videoWidth}x${video.videoHeight}`);
+        
+        // Calculate precise scaling factors
+        const scaleX = video.videoWidth / window.innerWidth;
+        const scaleY = video.videoHeight / window.innerHeight;
+        
+        console.log(`📏 Scale factors: X=${scaleX.toFixed(3)}, Y=${scaleY.toFixed(3)}`);
+
+        // Map screen coordinates to video coordinates
+        const videoLeft = left * scaleX;
+        const videoTop = top * scaleY;
+        const videoWidth = captureWidth * scaleX;
+        const videoHeight = captureHeight * scaleY;
+
+        console.log(`🎥 Video crop: ${videoWidth.toFixed(1)}x${videoHeight.toFixed(1)} at (${videoLeft.toFixed(1)},${videoTop.toFixed(1)})`);
+
+        updateLoadingBar(70, 'Creating high-resolution canvas...');
+
+        // Create ultra-high-resolution output canvas
+        const outputScale = 6; // Reduced from 12x to 6x for smoother processing
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', {
+          alpha: false,
+          desynchronized: true, // Allow faster rendering
+          willReadFrequently: false
+        });
+
+        canvas.width = Math.round(captureWidth * outputScale);
+        canvas.height = Math.round(captureHeight * outputScale);
+
+        console.log(`🖼️ Output canvas: ${canvas.width}x${canvas.height}`);
+
+        updateLoadingBar(80, 'Rendering high-quality image...');
+
+        // Configure high-quality rendering
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Draw the cropped video frame to canvas
+        ctx.drawImage(
+          video,
+          videoLeft, videoTop, videoWidth, videoHeight,
+          0, 0, canvas.width, canvas.height
+        );
+
+        updateLoadingBar(90, 'Processing image data...');
+
+        // Don't stop the stream immediately - keep it for reuse
+        // Stream will auto-expire after 5 minutes or be cleaned up on page unload
+
+        console.log('✨ Screen capture complete, preparing download...');
+        
+        updateLoadingBar(95, 'Generating download...');
+        
+        // Download the captured image
+        const authorName = document.querySelector('.author-input').value.trim() || 'card';
+        const sanitizedName = authorName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+
+        const link = document.createElement('a');
+        link.download = `emotion_card_${sanitizedName}_${timestamp}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        updateLoadingBar(100, 'Download complete!');
+
+        console.log('✅ High-fidelity capture completed successfully!');
+        
+        // Small delay to show completion before hiding
+        setTimeout(() => {
+          hideLoadingBar();
+        }, 800);
+        
+        // Restore titles and cursor
+        if(previewTitle) previewTitle.style.display = '';
+        if(previewTitle2) previewTitle2.style.display = '';
+        if(editTitle) editTitle.style.display = '';
+        if(editTitle2) editTitle2.style.display = '';
+        unlockPointer();
+        
+        // Restore mouse cursor
+        showCursor();
+
+      } catch (error) {
+        console.error('❌ Screen capture failed:', error);
+        
+        // Hide loading bar on error
+        hideLoadingBar();
+        
+        // Restore titles and cursor after error
+        if(previewTitle) previewTitle.style.display = '';
+        if(previewTitle2) previewTitle2.style.display = '';
+        if(editTitle) editTitle.style.display = '';
+        if(editTitle2) editTitle2.style.display = '';
+        unlockPointer();
+        
+        // Restore mouse cursor
+        showCursor();
+        
+        if (error.name === 'NotAllowedError') {
+          alert('Screen capture permission denied. Please allow screen sharing and try again.\n\nTip: Look for "Chrome Tab" option in the sharing dialog for best quality.');
+        } else if (error.name === 'NotSupportedError') {
+          alert('Screen capture not supported in this browser. Please use Chrome, Firefox, or Edge.');
+        } else {
+          alert('Screen capture failed: ' + error.message + '\n\nPlease try:\n1. Refreshing the page\n2. Using Chrome Tab capture option\n3. Manual screenshot (Cmd+Shift+4 on Mac)');
+        }
+      }
+    }
+
+    // Button event listeners removed since buttons were removed
+    
+
+
+    // Add keyboard shortcut: Press 'S' to save/download card
+    document.addEventListener('keydown', (event) => {
+      // Check if we're not in an input field
+      const inInputField = event.target.tagName === 'INPUT' || 
+                          event.target.tagName === 'TEXTAREA' ||
+                          event.target.isContentEditable;
+      
+      // Check if 'S' key is pressed for screenshot
+      if (event.key.toLowerCase() === 's' && 
+          !event.ctrlKey && !event.metaKey && !event.altKey && // No modifier keys
+          !inInputField) {
+        
+        event.preventDefault(); // Prevent any default browser behavior
+        console.log('🎹 S key pressed - triggering card save');
+        downloadCardAsImage();
+      }
+      
+      // Check if 'C' key is pressed for screen recording
+      if (event.key.toLowerCase() === 'c' && 
+          !event.ctrlKey && !event.metaKey && !event.altKey && // No modifier keys
+          !inInputField) {
+        
+        event.preventDefault(); // Prevent any default browser behavior
+        
+        if (isRecording) {
+          console.log('🎹 C key pressed - stopping recording');
+          stopScreenRecording();
+        } else {
+          console.log('🎹 C key pressed - starting recording');
+          startScreenRecording();
+        }
+      }
+      
+      // Check if 'W' key is pressed for WhatsApp sharing
+      if (event.key.toLowerCase() === 'w' && 
+          !event.ctrlKey && !event.metaKey && !event.altKey && // No modifier keys
+          !inInputField) {
+        
+        event.preventDefault(); // Prevent any default browser behavior
+        console.log('🎹 W key pressed - sharing to WhatsApp');
+        shareToWhatsApp();
+      }
+    });
+
+    // Clean up capture stream when page unloads
+    window.addEventListener('beforeunload', () => {
+      if (globalCaptureStream) {
+        globalCaptureStream.getTracks().forEach(track => track.stop());
+        globalCaptureStream = null;
+        console.log('🧹 Cleaned up capture stream on page unload');
+      }
+    });
+
+    // === RIGHT PANEL HOVER EFFECT FOR BACKGROUND SCALING ===
+    const rightTabContent1 = document.getElementById('rightTabContent1');
+    const rightTabContent2 = document.getElementById('rightTabContent2');
+    const rightTabContent3 = document.getElementById('rightTabContent3');
+    const rightTabContent4 = document.getElementById('rightTabContent4');
+    const rightTabBg = document.getElementById('rightTabBg');
+    const rightTabBorder = document.getElementById('rightTabBorder');
+    const rightTabBg2 = document.getElementById('rightTabBg2');
+    const rightTabBorder2 = document.getElementById('rightTabBorder2');
+
+    function addHoverScale() {
+      if (rightTabBg) rightTabBg.style.transform = 'scale(1.05)';
+      if (rightTabBorder) rightTabBorder.style.transform = 'scale(1.05)';
+    }
+
+    function removeHoverScale() {
+      if (rightTabBg) rightTabBg.style.transform = 'scale(1)';
+      if (rightTabBorder) rightTabBorder.style.transform = 'scale(1)';
+    }
+
+    function addHoverScale2() {
+      if (rightTabBg2) rightTabBg2.style.transform = 'scale(1.05)';
+      if (rightTabBorder2) rightTabBorder2.style.transform = 'scale(1.05)';
+    }
+
+    function removeHoverScale2() {
+      if (rightTabBg2) rightTabBg2.style.transform = 'scale(1)';
+      if (rightTabBorder2) rightTabBorder2.style.transform = 'scale(1)';
+    }
+
+    // Add hover listeners to both content layers of first button
+    if (rightTabContent1) {
+      rightTabContent1.addEventListener('mouseenter', addHoverScale);
+      rightTabContent1.addEventListener('mouseleave', removeHoverScale);
+    }
+    if (rightTabContent2) {
+      rightTabContent2.addEventListener('mouseenter', addHoverScale);
+      rightTabContent2.addEventListener('mouseleave', removeHoverScale);
+    }
+
+    // Add hover listeners to both content layers of second button
+    if (rightTabContent3) {
+      rightTabContent3.addEventListener('mouseenter', addHoverScale2);
+      rightTabContent3.addEventListener('mouseleave', removeHoverScale2);
+    }
+    if (rightTabContent4) {
+      rightTabContent4.addEventListener('mouseenter', addHoverScale2);
+      rightTabContent4.addEventListener('mouseleave', removeHoverScale2);
+    }
+
+    // === SAVE CLIP BUTTON CLICK FUNCTIONALITY ===
+    // Add click event listeners to save clip buttons to behave like 'c' key
+    const saveClipContainers = document.querySelectorAll('#rightTabContent3 .right-panel-content, #rightTabContent4 .right-panel-content');
+    
+    saveClipContainers.forEach(container => {
+      container.addEventListener('click', (event) => {
+        event.preventDefault();
+        console.log('🎬 Save Clip button clicked - triggering record toggle');
+        
+        // Same logic as 'c' key press
+        if (isRecording) {
+          console.log('🎬 Save Clip clicked - stopping recording');
+          stopScreenRecording();
+        } else {
+          console.log('🎬 Save Clip clicked - starting recording');
+          startScreenRecording();
+        }
+      });
+      
+      // Add cursor pointer to indicate clickable
+      container.style.cursor = 'pointer';
+    });
+
+    // === CAMERA ICON CLICK FUNCTIONALITY ===
+    // Add click event listeners to all camera icons to trigger download
+    const cameraIcons = document.querySelectorAll('.camera-icon, .camera-icon-dark');
+    const cameraContainers = document.querySelectorAll('#rightTabContent1 .right-panel-content, #rightTabContent2 .right-panel-content');
+    
+    // Function to create camera lens blink animation
+    function animateCameraLensBlink() {
+      // Check if we're in dark mode by seeing if any IMG camera icons are currently visible
+      const visibleCameraImgs = Array.from(document.querySelectorAll('img.camera-icon-dark')).filter(img => 
+        img.style.display !== 'none' && getComputedStyle(img).display !== 'none'
+      );
+      const isDarkMode = visibleCameraImgs.length > 0;
+      
+      if (isDarkMode) {
+        // In dark mode, just accept that there will be two circles briefly
+        // This is the simplest solution that works reliably
+        visibleCameraImgs.forEach(img => {
+          // Get the IMG position and size
+          const imgRect = img.getBoundingClientRect();
+          
+          // Create circle element positioned exactly over the camera lens
+          const tempCircle = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          tempCircle.style.position = 'fixed';
+          tempCircle.style.left = imgRect.left + 'px';
+          tempCircle.style.top = imgRect.top + 'px';
+          tempCircle.style.width = imgRect.width + 'px';
+          tempCircle.style.height = imgRect.height + 'px';
+          tempCircle.style.pointerEvents = 'none';
+          tempCircle.style.zIndex = '1000';
+          tempCircle.setAttribute('viewBox', '0 0 62 50');
+          
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', '31');
+          circle.setAttribute('cy', '28.5');
+          circle.setAttribute('r', '8');
+          circle.setAttribute('stroke', '#000000');
+          circle.setAttribute('stroke-width', '2'); // Slightly thicker to make it more prominent
+          circle.setAttribute('fill', 'none');
+          
+          tempCircle.appendChild(circle);
+          document.body.appendChild(tempCircle);
+          
+          // Animate exactly like the original
+          const cx = circle.getAttribute('cx') || '31';
+          const cy = circle.getAttribute('cy') || '28.5';
+          circle.style.transformOrigin = `${cx}px ${cy}px`;
+          
+          // Start with normal state
+          circle.style.transform = 'scale(1)';
+          circle.style.opacity = '1';
+          circle.style.transition = '';
+          
+          // Force reflow
+          circle.getBoundingClientRect();
+          
+          // Then animate to shrunk state
+          circle.style.transition = 'transform 0.15s ease, opacity 0.15s ease';
+          circle.style.transform = 'scale(0.3)';
+          circle.style.opacity = '0.3';
+          
+          setTimeout(() => {
+            // Then back to normal
+            circle.style.transform = 'scale(1)';
+            circle.style.opacity = '1';
+            
+            // Remove temporary circle after animation
+            setTimeout(() => {
+              tempCircle.remove();
+            }, 150);
+          }, 150);
+        });
+      } else {
+        // Normal mode: animate visible SVG circles
+        const allCameraCircles = document.querySelectorAll('.camera-icon circle');
+        
+        allCameraCircles.forEach(circle => {
+          // Set transform origin to center of the circle to prevent shifting
+          const cx = circle.getAttribute('cx') || '31';
+          const cy = circle.getAttribute('cy') || '28.5';
+          circle.style.transformOrigin = `${cx}px ${cy}px`;
+          
+          // Create blink effect: scale down then back up with opacity change
+          circle.style.transition = 'transform 0.15s ease, opacity 0.15s ease';
+          circle.style.transform = 'scale(0.3)';
+          circle.style.opacity = '0.3';
+          
+          setTimeout(() => {
+            circle.style.transform = 'scale(1)';
+            circle.style.opacity = '1';
+            
+            // Remove transition after animation
+            setTimeout(() => {
+              circle.style.transition = '';
+              circle.style.transformOrigin = '';
+            }, 150);
+          }, 150);
+        });
+      }
+    }
+    
+    // Add click handlers to camera containers (covers both SVG and IMG versions)
+    cameraContainers.forEach(container => {
+      container.addEventListener('click', (event) => {
+        event.preventDefault();
+        console.log('📷 Camera icon clicked - triggering card save');
+        
+        // Animate lens blink
+        animateCameraLensBlink();
+        
+        // Small delay to show the blink before download starts
+        setTimeout(() => {
+          downloadCardAsImage();
+        }, 100);
+      });
+      
+      // Add cursor pointer to indicate clickable
+      container.style.cursor = 'pointer';
+    });
+
+    // === SAVE IMAGE BUTTON TEXT HOVER EFFECTS ===
+    // ... existing code ...
+    // REPLACEMENT START
+      
+      /* ---- Individual Save-Image hover effects for each button ---- */
+      
+      // Define easing function first
+      const easeOutQuad = t => 1 - (1 - t) * (1 - t);
+      
+      // Prepare every title once by wrapping each character in <span class="save-char">
+      const allSaveTitles = Array.from(document.querySelectorAll('.right-panel-title'));
+      console.log('🔧 Found save titles to prepare:', allSaveTitles.length);
+      allSaveTitles.forEach((title, index) => {
+        if (title.dataset.prepared) {
+          console.log(`🔧 Title ${index} already prepared`);
+          return;
+        }
+        const chars = title.textContent.trim().split('');
+        title.innerHTML = chars
+          .map(ch => (ch === ' ' ? '<span class="save-space">&nbsp;</span>' : `<span class="save-char">${ch}</span>`))
+          .join('');
+        title.dataset.prepared = 'true';
+        console.log(`🔧 Prepared title ${index} with ${chars.length} characters`);
+      });
+      
+      // Create individual hover systems for each button
+      function createSaveButtonHoverSystem(buttonContainers, titleSelector) {
+        console.log('🔧 Creating hover system for selector:', titleSelector);
+        const referenceTitle = document.querySelector(titleSelector);
+        if (!referenceTitle) {
+          console.log('❌ Reference title not found for selector:', titleSelector);
+          return;
+        }
+        console.log('✅ Reference title found:', referenceTitle);
+        
+        let charCenters = [];
+        const saveRadius = 40;
+        
+        // Get titles that belong to this specific button
+        const buttonTitles = [];
+        buttonContainers.forEach(container => {
+          const titles = container.querySelectorAll('.right-panel-title');
+          titles.forEach(title => buttonTitles.push(title));
+        });
+        console.log('🔧 Button titles found:', buttonTitles.length);
+        
+        // Helper: recompute character centre coordinates
+        function updateCharCenters() {
+          const rect = referenceTitle.getBoundingClientRect();
+          charCenters = Array.from(referenceTitle.querySelectorAll('.save-char')).map(span => {
+            const r = span.getBoundingClientRect();
+            return { x: r.left - rect.left + r.width / 2, y: r.top - rect.top + r.height / 2 };
+          });
+        }
+        
+        // Helper: apply weights only to this button's titles
+        function applyWeights(weights) {
+          buttonTitles.forEach(title => {
+            const spans = title.querySelectorAll('.save-char');
+            weights.forEach((w, i) => { if (spans[i]) spans[i].style.fontWeight = w; });
+          });
+        }
+        
+        // Hover handler for this specific button
+        function onSaveMove(ev) {
+          const rect = referenceTitle.getBoundingClientRect();
+          const mouseX = ev.clientX - rect.left;
+          const mouseY = ev.clientY - rect.top;
+          
+          const weights = charCenters.map(c => {
+            const dx = mouseX - c.x;
+            const dy = mouseY - c.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const raw = Math.max(0, 1 - dist / saveRadius);
+            const influence = easeOutQuad(raw);
+            return Math.round(200 + influence * 400); // 200-600
+          });
+          applyWeights(weights);
+        }
+        
+        // Reset handler for this specific button
+        function onSaveLeave() { 
+          applyWeights(new Array(charCenters.length).fill(200)); 
+        }
+        
+        // Attach listeners to this button's containers
+        buttonContainers.forEach(tab => {
+          tab.addEventListener('mouseenter', updateCharCenters);
+          tab.addEventListener('mousemove', onSaveMove);
+          tab.addEventListener('mouseleave', onSaveLeave);
+        });
+              }
+        
+        // Create hover system for first button (rightTab + rightTab2)
+      const firstButtonContainers = document.querySelectorAll('.inputTab-content.rightTab, .inputTab-content.rightTab2');
+      console.log('🔧 Setting up first button hover system, containers found:', firstButtonContainers.length);
+      createSaveButtonHoverSystem(firstButtonContainers, '#rightTabContent1 .right-panel-title:not(.right-panel-title-duplicate)');
+      
+      // Create hover system for second button (rightTab3 + rightTab4)  
+      const secondButtonContainers = document.querySelectorAll('.inputTab-content.rightTab3, .inputTab-content.rightTab4');
+      console.log('🔧 Setting up second button hover system, containers found:', secondButtonContainers.length);
+      createSaveButtonHoverSystem(secondButtonContainers, '#rightTabContent3 .right-panel-title:not(.right-panel-title-duplicate)');
+      
+    // REPLACEMENT END
+    // ... existing code ...
+
+    // === ANIMATED LOGO HOVER SYNC ===
+    // Handle hover state for all three logo containers simultaneously
+    const logoContainers = document.querySelectorAll('.animated-logo-container');
+    
+    logoContainers.forEach(container => {
+      container.addEventListener('mouseenter', () => {
+        // Add hover class to all containers when any is hovered
+        logoContainers.forEach(c => c.classList.add('logo-hover'));
+      });
+      
+      container.addEventListener('mouseleave', () => {
+        // Remove hover class from all containers when mouse leaves any
+        logoContainers.forEach(c => c.classList.remove('logo-hover'));
+      });
+    });
+  </script>
+</body>
+</html>

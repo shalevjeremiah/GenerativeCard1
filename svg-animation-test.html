@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Path Animation Test</title>
+    <style>
+        body {
+            font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .svg-container {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 40px;
+            align-items: flex-start;
+        }
+        
+        .svg-display {
+            flex: 1;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .original-svg {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+        }
+        
+        .animated-svg {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+        }
+        
+        .svg-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        /* Interactive Point Styles */
+        .hover-point {
+            fill: rgba(255, 255, 255, 0.8);
+            stroke: rgba(0, 122, 255, 1);
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0.7;
+        }
+        
+        .hover-point:hover {
+            fill: rgba(255, 255, 0, 0.9);
+            stroke: rgba(255, 255, 0, 1);
+            stroke-width: 3;
+            opacity: 1;
+            transform: scale(1.3);
+            transform-origin: center;
+        }
+        
+        /* Different colors for different shape groups */
+        .bar-point {
+            fill: rgba(255, 100, 100, 0.8);
+            stroke: rgba(255, 50, 50, 1);
+        }
+        
+        .bar-point:hover {
+            fill: rgba(255, 150, 150, 0.9);
+            stroke: rgba(255, 100, 100, 1);
+        }
+        
+        .upper-point {
+            fill: rgba(100, 255, 100, 0.8);
+            stroke: rgba(50, 255, 50, 1);
+        }
+        
+        .upper-point:hover {
+            fill: rgba(150, 255, 150, 0.9);
+            stroke: rgba(100, 255, 100, 1);
+        }
+        
+        .lower-point {
+            fill: rgba(255, 150, 255, 0.8);
+            stroke: rgba(255, 100, 255, 1);
+        }
+        
+        .lower-point:hover {
+            fill: rgba(255, 200, 255, 0.9);
+            stroke: rgba(255, 150, 255, 1);
+        }
+        
+        /* Tooltip Styles */
+        .point-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -100%);
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+            min-width: 120px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .point-tooltip.visible {
+            opacity: 1;
+        }
+        
+        .tooltip-coords {
+            font-weight: bold;
+            color: #4ECDC4;
+            margin-bottom: 2px;
+        }
+        
+        .tooltip-type {
+            color: #FF6B6B;
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+        
+        .tooltip-desc {
+            color: #FFF;
+            font-size: 10px;
+            font-style: italic;
+        }
+        
+        .controls {
+            flex: 1;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .control-group input, .control-group select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: #1a1a1a;
+            color: white;
+        }
+        
+        .btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: #0056CC;
+        }
+        
+        .path-analysis {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .path-points {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        
+        .point-type {
+            color: #FF6B6B;
+            font-weight: bold;
+        }
+        
+        .coordinates {
+            color: #4ECDC4;
+        }
+        
+        .path-section {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-left: 3px solid #007AFF;
+        }
+        
+        /* Animation classes */
+        .animate-morph {
+            animation: morphPath 3s ease-in-out infinite alternate;
+        }
+        
+        .animate-draw {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawPath 2s ease-in-out forwards;
+        }
+        
+        @keyframes morphPath {
+            0% {
+                d: path("M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992Z");
+            }
+            100% {
+                d: path("M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L150 150L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992Z");
+            }
+        }
+        
+        @keyframes drawPath {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        /* Base path animation properties - More responsive */
+        .hover-animation-enabled #animatedPath,
+        .hover-animation-enabled #smallAnimatedPath {
+            transition: d 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Example Hover Animation - Most points move down, creating expanded effect */
+        .hover-animation-enabled .animated-svg:hover #animatedPath,
+        .hover-animation-enabled .animated-svg:hover #smallAnimatedPath {
+            d: path("M17.5639 238.992C7.87781 238.992 0 231.113 0 221.435V42.5569C0 32.87 7.87781 25 17.5639 25H229.444C239.131 25 247 32.8784 247 42.5653V79.4473C247 84.1359 245.175 88.5481 241.86 91.8636L99.8749 233.859C96.5597 237.175 92.1478 239 87.4596 239H17.5639V238.992ZM18.9453 41.1169C17.3881 41.1169 16.1156 42.3895 16.1156 43.9467V211.587C16.1156 213.144 17.3881 214.417 18.9453 214.417H57.4469C59.0041 214.417 60.2766 213.144 60.2766 211.587V43.9384C60.2766 42.3811 59.0041 41.1085 57.4469 41.1085H18.9453V41.1169ZM188.289 41.1169C187.535 41.1169 186.824 41.4099 186.288 41.9457L77.2294 150.921C76.7019 151.448 76.4005 152.177 76.4005 152.922V207.426C76.4005 209.201 77.8489 210.264 79.2553 210.264C80.0004 210.264 80.6869 209.98 81.231 209.427L230.056 60.5743C230.591 60.0385 230.884 59.3268 230.884 58.5733V43.9467C230.884 42.3895 229.612 41.1169 228.055 41.1169H188.289ZM102.989 41.1169C102.236 41.1169 101.524 41.4099 100.988 41.9457L77.221 65.7149C76.6852 66.2508 76.3922 66.9624 76.3922 67.7159V122.17C76.3922 123.945 77.8405 125.008 79.2469 125.008C80.0004 125.008 80.6785 124.724 81.231 124.171L144.764 60.591C145.292 60.0636 145.593 59.3352 145.593 58.59V43.9467C145.593 42.3895 144.321 41.1169 142.763 41.1169H102.998H102.989Z");
+            transition-delay: 0.05s;
+        }
+        
+        /* Base transitions for all animated points - More responsive */
+        .hover-animation-enabled circle {
+            transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Individual point animations - All points EXCEPT 1,2,7,8,9,10 move down with quick staggered timing */
+        .hover-animation-enabled .animated-svg:hover circle[data-number="3"] {
+            transform: translateY(25px);
+            transition-delay: 0.02s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="4"] {
+            transform: translateY(25px);
+            transition-delay: 0.04s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="5"] {
+            transform: translateY(25px);
+            transition-delay: 0.06s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="6"] {
+            transform: translateY(25px);
+            transition-delay: 0.08s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="11"] {
+            transform: translateY(25px);
+            transition-delay: 0.03s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="12"] {
+            transform: translateY(25px);
+            transition-delay: 0.05s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="13"] {
+            transform: translateY(25px);
+            transition-delay: 0.07s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="14"] {
+            transform: translateY(25px);
+            transition-delay: 0.08s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="15"] {
+            transform: translateY(25px);
+            transition-delay: 0.06s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="16"] {
+            transform: translateY(25px);
+            transition-delay: 0.04s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="17"] {
+            transform: translateY(25px);
+            transition-delay: 0.1s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="18"] {
+            transform: translateY(25px);
+            transition-delay: 0.09s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="19"] {
+            transform: translateY(25px);
+            transition-delay: 0.11s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="20"] {
+            transform: translateY(25px);
+            transition-delay: 0.1s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="21"] {
+            transform: translateY(25px);
+            transition-delay: 0.12s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="22"] {
+            transform: translateY(25px);
+            transition-delay: 0.13s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="23"] {
+            transform: translateY(25px);
+            transition-delay: 0.11s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="24"] {
+            transform: translateY(25px);
+            transition-delay: 0.12s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="25"] {
+            transform: translateY(25px);
+            transition-delay: 0.14s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="26"] {
+            transform: translateY(25px);
+            transition-delay: 0.13s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="27"] {
+            transform: translateY(25px);
+            transition-delay: 0.15s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="28"] {
+            transform: translateY(25px);
+            transition-delay: 0.14s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="29"] {
+            transform: translateY(25px);
+            transition-delay: 0.16s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="30"] {
+            transform: translateY(25px);
+            transition-delay: 0.17s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="31"] {
+            transform: translateY(25px);
+            transition-delay: 0.15s;
+        }
+        
+        .hover-animation-enabled .animated-svg:hover circle[data-number="32"] {
+            transform: translateY(25px);
+            transition-delay: 0.14s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SVG Path Animation Test</h1>
+            <p>Experimenting with logo.svg path animations and morphing</p>
+        </div>
+        
+        <div class="svg-container">
+            <div class="svg-display">
+                <h3>Original Logo</h3>
+                <svg class="original-svg" width="247" height="234" viewBox="0 0 247 234" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992ZM18.9453 16.1169C17.3881 16.1169 16.1156 17.3895 16.1156 18.9467V186.587C16.1156 188.144 17.3881 189.417 18.9453 189.417H57.4469C59.0041 189.417 60.2766 188.144 60.2766 186.587V18.9384C60.2766 17.3811 59.0041 16.1085 57.4469 16.1085H18.9453V16.1169ZM188.289 16.1169C187.535 16.1169 186.824 16.4099 186.288 16.9457L77.2294 125.921C76.7019 126.448 76.4005 127.177 76.4005 127.922V182.426C76.4005 184.201 77.8489 185.264 79.2553 185.264C80.0004 185.264 80.6869 184.98 81.231 184.427L230.056 35.5743C230.591 35.0385 230.884 34.3268 230.884 33.5733V18.9467C230.884 17.3895 229.612 16.1169 228.055 16.1169H188.289ZM102.989 16.1169C102.236 16.1169 101.524 16.4099 100.988 16.9457L77.221 40.7149C76.6852 41.2508 76.3922 41.9624 76.3922 42.7159V97.17C76.3922 98.9449 77.8405 100.008 79.2469 100.008C80.0004 100.008 80.6785 99.7236 81.231 99.171L144.764 35.591C145.292 35.0636 145.593 34.3352 145.593 33.59V18.9467C145.593 17.3895 144.321 16.1169 142.763 16.1169H102.998H102.989Z" 
+                          fill="rgba(255, 255, 255, 0.8)" 
+                          stroke="rgba(255, 255, 255, 0.3)" 
+                          stroke-width="1"/>
+                </svg>
+                
+                <div style="margin-top: 20px;">
+                    <h4>Small Scale Hover Demo</h4>
+                    <div style="display: flex; justify-content: center; align-items: center; background: #1a1a1a; padding: 20px; border-radius: 8px;">
+                        <svg class="animated-svg" width="123" height="140" viewBox="0 0 247 264" fill="none" xmlns="http://www.w3.org/2000/svg" style="max-width: 120px;">
+                            <path id="smallAnimatedPath" 
+                                  d="M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992ZM18.9453 16.1169C17.3881 16.1169 16.1156 17.3895 16.1156 18.9467V186.587C16.1156 188.144 17.3881 189.417 18.9453 189.417H57.4469C59.0041 189.417 60.2766 188.144 60.2766 186.587V18.9384C60.2766 17.3811 59.0041 16.1085 57.4469 16.1085H18.9453V16.1169ZM188.289 16.1169C187.535 16.1169 186.824 16.4099 186.288 16.9457L77.2294 125.921C76.7019 126.448 76.4005 127.177 76.4005 127.922V182.426C76.4005 184.201 77.8489 185.264 79.2553 185.264C80.0004 185.264 80.6869 184.98 81.231 184.427L230.056 35.5743C230.591 35.0385 230.884 34.3268 230.884 33.5733V18.9467C230.884 17.3895 229.612 16.1169 228.055 16.1169H188.289ZM102.989 16.1169C102.236 16.1169 101.524 16.4099 100.988 16.9457L77.221 40.7149C76.6852 41.2508 76.3922 41.9624 76.3922 42.7159V97.17C76.3922 98.9449 77.8405 100.008 79.2469 100.008C80.0004 100.008 80.6785 99.7236 81.231 99.171L144.764 35.591C145.292 35.0636 145.593 34.3352 145.593 33.59V18.9467C145.593 17.3895 144.321 16.1169 142.763 16.1169H102.998H102.989Z" 
+                                  fill="rgba(255, 255, 255, 0.6)" 
+                                  stroke="rgba(255, 255, 255, 0.8)" 
+                                  stroke-width="1"/>
+                        </svg>
+                    </div>
+                    <p style="font-size: 11px; color: #999; text-align: center; margin-top: 10px;">
+                        ↑ Enable hover animation and hover over this small logo to see the effect!
+                    </p>
+                </div>
+            </div>
+            
+            <div class="svg-display">
+                <h3>Interactive Logo with Hover Points</h3>
+                <div class="svg-wrapper">
+                    <svg class="animated-svg" width="247" height="264" viewBox="0 0 247 264" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path id="animatedPath" 
+                              d="M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992ZM18.9453 16.1169C17.3881 16.1169 16.1156 17.3895 16.1156 18.9467V186.587C16.1156 188.144 17.3881 189.417 18.9453 189.417H57.4469C59.0041 189.417 60.2766 188.144 60.2766 186.587V18.9384C60.2766 17.3811 59.0041 16.1085 57.4469 16.1085H18.9453V16.1169ZM188.289 16.1169C187.535 16.1169 186.824 16.4099 186.288 16.9457L77.2294 125.921C76.7019 126.448 76.4005 127.177 76.4005 127.922V182.426C76.4005 184.201 77.8489 185.264 79.2553 185.264C80.0004 185.264 80.6869 184.98 81.231 184.427L230.056 35.5743C230.591 35.0385 230.884 34.3268 230.884 33.5733V18.9467C230.884 17.3895 229.612 16.1169 228.055 16.1169H188.289ZM102.989 16.1169C102.236 16.1169 101.524 16.4099 100.988 16.9457L77.221 40.7149C76.6852 41.2508 76.3922 41.9624 76.3922 42.7159V97.17C76.3922 98.9449 77.8405 100.008 79.2469 100.008C80.0004 100.008 80.6785 99.7236 81.231 99.171L144.764 35.591C145.292 35.0636 145.593 34.3352 145.593 33.59V18.9467C145.593 17.3895 144.321 16.1169 142.763 16.1169H102.998H102.989Z" 
+                              fill="rgba(0, 122, 255, 0.6)" 
+                              stroke="rgba(0, 122, 255, 0.8)" 
+                              stroke-width="2"/>
+                        
+                        <!-- Interactive Points -->
+                        <g id="interactivePoints" class="point-group">
+                            <!-- Main Shape Key Points (1-10) -->
+                            <circle class="hover-point" cx="17.5639" cy="233.992" r="4" data-coords="17.5639, 233.992" data-type="Move" data-number="1"/>
+                            <circle class="hover-point" cx="0" cy="216.435" r="4" data-coords="0, 216.435" data-type="Curve" data-number="2"/>
+                            <circle class="hover-point" cx="0" cy="17.5569" r="4" data-coords="0, 17.5569" data-type="Vertical" data-number="3"/>
+                            <circle class="hover-point" cx="17.5639" cy="0" r="4" data-coords="17.5639, 0" data-type="Curve" data-number="4"/>
+                            <circle class="hover-point" cx="229.444" cy="0" r="4" data-coords="229.444, 0" data-type="Horizontal" data-number="5"/>
+                            <circle class="hover-point" cx="247" cy="17.5653" r="4" data-coords="247, 17.5653" data-type="Curve" data-number="6"/>
+                            <circle class="hover-point" cx="247" cy="74.4473" r="4" data-coords="247, 74.4473" data-type="Vertical" data-number="7"/>
+                            <circle class="hover-point" cx="241.86" cy="86.8636" r="4" data-coords="241.86, 86.8636" data-type="Curve" data-number="8"/>
+                            <circle class="hover-point" cx="99.8749" cy="228.859" r="4" data-coords="99.8749, 228.859" data-type="Line" data-number="9"/>
+                            <circle class="hover-point" cx="87.4596" cy="234" r="4" data-coords="87.4596, 234" data-type="Curve" data-number="10"/>
+                            
+                            <!-- Left Bar Points (11-16) -->
+                            <circle class="hover-point bar-point" cx="18.9453" cy="16.1169" r="3" data-coords="18.9453, 16.1169" data-type="Move" data-number="11"/>
+                            <circle class="hover-point bar-point" cx="16.1156" cy="18.9467" r="3" data-coords="16.1156, 18.9467" data-type="Curve" data-number="12"/>
+                            <circle class="hover-point bar-point" cx="16.1156" cy="186.587" r="3" data-coords="16.1156, 186.587" data-type="Vertical" data-number="13"/>
+                            <circle class="hover-point bar-point" cx="57.4469" cy="189.417" r="3" data-coords="57.4469, 189.417" data-type="Horizontal" data-number="14"/>
+                            <circle class="hover-point bar-point" cx="60.2766" cy="186.587" r="3" data-coords="60.2766, 186.587" data-type="Curve" data-number="15"/>
+                            <circle class="hover-point bar-point" cx="60.2766" cy="18.9384" r="3" data-coords="60.2766, 18.9384" data-type="Vertical" data-number="16"/>
+                            
+                            <!-- Upper Right Shape Points (17-24) -->
+                            <circle class="hover-point upper-point" cx="188.289" cy="16.1169" r="3" data-coords="188.289, 16.1169" data-type="Move" data-number="17"/>
+                            <circle class="hover-point upper-point" cx="186.288" cy="16.9457" r="3" data-coords="186.288, 16.9457" data-type="Curve" data-number="18"/>
+                            <circle class="hover-point upper-point" cx="77.2294" cy="125.921" r="3" data-coords="77.2294, 125.921" data-type="Line" data-number="19"/>
+                            <circle class="hover-point upper-point" cx="76.4005" cy="127.922" r="3" data-coords="76.4005, 127.922" data-type="Curve" data-number="20"/>
+                            <circle class="hover-point upper-point" cx="76.4005" cy="182.426" r="3" data-coords="76.4005, 182.426" data-type="Vertical" data-number="21"/>
+                            <circle class="hover-point upper-point" cx="81.231" cy="184.427" r="3" data-coords="81.231, 184.427" data-type="Curve" data-number="22"/>
+                            <circle class="hover-point upper-point" cx="230.056" cy="35.5743" r="3" data-coords="230.056, 35.5743" data-type="Line" data-number="23"/>
+                            <circle class="hover-point upper-point" cx="230.884" cy="33.5733" r="3" data-coords="230.884, 33.5733" data-type="Curve" data-number="24"/>
+                            
+                            <!-- Lower Left Shape Points (25-32) -->
+                            <circle class="hover-point lower-point" cx="102.989" cy="16.1169" r="3" data-coords="102.989, 16.1169" data-type="Move" data-number="25"/>
+                            <circle class="hover-point lower-point" cx="100.988" cy="16.9457" r="3" data-coords="100.988, 16.9457" data-type="Curve" data-number="26"/>
+                            <circle class="hover-point lower-point" cx="77.221" cy="40.7149" r="3" data-coords="77.221, 40.7149" data-type="Line" data-number="27"/>
+                            <circle class="hover-point lower-point" cx="76.3922" cy="42.7159" r="3" data-coords="76.3922, 42.7159" data-type="Curve" data-number="28"/>
+                            <circle class="hover-point lower-point" cx="76.3922" cy="97.17" r="3" data-coords="76.3922, 97.17" data-type="Vertical" data-number="29"/>
+                            <circle class="hover-point lower-point" cx="81.231" cy="99.171" r="3" data-coords="81.231, 99.171" data-type="Curve" data-number="30"/>
+                            <circle class="hover-point lower-point" cx="144.764" cy="35.591" r="3" data-coords="144.764, 35.591" data-type="Line" data-number="31"/>
+                            <circle class="hover-point lower-point" cx="145.593" cy="33.59" r="3" data-coords="145.593, 33.59" data-type="Curve" data-number="32"/>
+                        </g>
+                    </svg>
+                    
+                    <!-- Tooltip -->
+                    <div id="pointTooltip" class="point-tooltip">
+                        <div class="tooltip-coords"></div>
+                        <div class="tooltip-type"></div>
+                        <div class="tooltip-desc"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <h3>Animation Controls</h3>
+                
+                <div class="control-group">
+                    <label>Animation Type:</label>
+                    <select id="animationType">
+                        <option value="none">None</option>
+                        <option value="morph">Path Morphing</option>
+                        <option value="draw">Draw Animation</option>
+                        <option value="custom">Custom Points</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Animation Duration (seconds):</label>
+                    <input type="range" id="duration" min="0.5" max="10" step="0.1" value="3">
+                    <span id="durationValue">3.0s</span>
+                </div>
+                
+                <div class="control-group">
+                    <label>Fill Color (RGBA):</label>
+                    <input type="text" id="fillColor" value="rgba(0, 122, 255, 0.6)" placeholder="rgba(r, g, b, a)">
+                </div>
+                
+                <div class="control-group">
+                    <label>Stroke Color (RGBA):</label>
+                    <input type="text" id="strokeColor" value="rgba(0, 122, 255, 0.8)" placeholder="rgba(r, g, b, a)">
+                </div>
+                
+                <div class="control-group">
+                    <label>Interactive Points:</label>
+                    <button class="btn" id="togglePoints" onclick="toggleInteractivePoints()">Hide Points</button>
+                </div>
+                
+                <button class="btn" onclick="applyAnimation()">Apply Animation</button>
+                <button class="btn" onclick="resetAnimation()">Reset</button>
+                <button class="btn" onclick="exportKeyframes()">Export Keyframes</button>
+                
+                <div class="control-group">
+                    <label>Example Animation:</label>
+                    <button class="btn" id="enableHoverAnimation" onclick="toggleHoverAnimation()">Enable Hover Animation</button>
+                </div>
+                
+                <div style="margin-top: 20px; font-size: 12px; color: #ccc;">
+                    💡 <strong>Tip:</strong> Hover over points to see coordinates, click to copy!<br>
+                    🎬 <strong>Example:</strong> Enable hover animation to see points 1,2,7,8,9,10 move up when hovering the logo!
+                </div>
+            </div>
+        </div>
+        
+        <div class="path-analysis">
+            <h2>Path Analysis - All Points Breakdown</h2>
+            <p>Your logo.svg contains <strong>one complex path</strong> with multiple sub-paths. Here are all the path points:</p>
+            
+            <div class="path-section">
+                <h4>🔷 Main Outer Shape (Container)</h4>
+                <div class="path-points"><span class="point-type">M</span> <span class="coordinates">17.5639 233.992</span>    ← Move to starting point (bottom-left corner)
+<span class="point-type">C</span> <span class="coordinates">7.87781 233.992 0 226.113 0 216.435</span>    ← Cubic curve (rounded corner)
+<span class="point-type">V</span> <span class="coordinates">17.5569</span>    ← Vertical line to top
+<span class="point-type">C</span> <span class="coordinates">0 7.87005 7.87781 0 17.5639 0</span>    ← Top-left rounded corner
+<span class="point-type">H</span> <span class="coordinates">229.444</span>    ← Horizontal line to right
+<span class="point-type">C</span> <span class="coordinates">239.131 0 247 7.87842 247 17.5653</span>    ← Top-right rounded corner
+<span class="point-type">V</span> <span class="coordinates">74.4473</span>    ← Vertical line down
+<span class="point-type">C</span> <span class="coordinates">247 79.1359 245.175 83.5481 241.86 86.8636</span>    ← Curve transition
+<span class="point-type">L</span> <span class="coordinates">99.8749 228.859</span>    ← Line to cut-out point
+<span class="point-type">C</span> <span class="coordinates">96.5597 232.175 92.1478 234 87.4596 234</span>    ← Curve back to bottom
+<span class="point-type">H</span> <span class="coordinates">17.5639</span>    ← Horizontal line to close
+<span class="point-type">V</span> <span class="coordinates">233.992</span>    ← Vertical close
+<span class="point-type">Z</span>    ← Close path</div>
+            </div>
+            
+            <div class="path-section">
+                <h4>🔷 Left Vertical Bar</h4>
+                <div class="path-points"><span class="point-type">M</span> <span class="coordinates">18.9453 16.1169</span>    ← Move to bar start
+<span class="point-type">C</span> <span class="coordinates">17.3881 16.1169 16.1156 17.3895 16.1156 18.9467</span>    ← Top rounded corner
+<span class="point-type">V</span> <span class="coordinates">186.587</span>    ← Vertical line down
+<span class="point-type">C</span> <span class="coordinates">16.1156 188.144 17.3881 189.417 18.9453 189.417</span>    ← Bottom-left corner
+<span class="point-type">H</span> <span class="coordinates">57.4469</span>    ← Horizontal line right
+<span class="point-type">C</span> <span class="coordinates">59.0041 189.417 60.2766 188.144 60.2766 186.587</span>    ← Bottom-right corner
+<span class="point-type">V</span> <span class="coordinates">18.9384</span>    ← Vertical line up
+<span class="point-type">C</span> <span class="coordinates">60.2766 17.3811 59.0041 16.1085 57.4469 16.1085</span>    ← Top-right corner
+<span class="point-type">H</span> <span class="coordinates">18.9453</span>    ← Horizontal line left
+<span class="point-type">V</span> <span class="coordinates">16.1169</span>    ← Close vertical
+<span class="point-type">Z</span>    ← Close path</div>
+            </div>
+            
+            <div class="path-section">
+                <h4>🔷 Upper Right Diagonal Shape</h4>
+                <div class="path-points"><span class="point-type">M</span> <span class="coordinates">188.289 16.1169</span>    ← Move to shape start
+<span class="point-type">C</span> <span class="coordinates">187.535 16.1169 186.824 16.4099 186.288 16.9457</span>    ← Curve start
+<span class="point-type">L</span> <span class="coordinates">77.2294 125.921</span>    ← Diagonal line down-left
+<span class="point-type">C</span> <span class="coordinates">76.7019 126.448 76.4005 127.177 76.4005 127.922</span>    ← Corner curve
+<span class="point-type">V</span> <span class="coordinates">182.426</span>    ← Vertical line down
+<span class="point-type">C</span> <span class="coordinates">76.4005 184.201 77.8489 185.264 79.2553 185.264</span>    ← Bottom curve
+<span class="point-type">C</span> <span class="coordinates">80.0004 185.264 80.6869 184.98 81.231 184.427</span>    ← Transition curve
+<span class="point-type">L</span> <span class="coordinates">230.056 35.5743</span>    ← Diagonal line up-right
+<span class="point-type">C</span> <span class="coordinates">230.591 35.0385 230.884 34.3268 230.884 33.5733</span>    ← Top curve
+<span class="point-type">V</span> <span class="coordinates">18.9467</span>    ← Vertical line up
+<span class="point-type">C</span> <span class="coordinates">230.884 17.3895 229.612 16.1169 228.055 16.1169</span>    ← Top corner
+<span class="point-type">H</span> <span class="coordinates">188.289</span>    ← Horizontal close
+<span class="point-type">Z</span>    ← Close path</div>
+            </div>
+            
+            <div class="path-section">
+                <h4>🔷 Lower Left Diagonal Shape</h4>
+                <div class="path-points"><span class="point-type">M</span> <span class="coordinates">102.989 16.1169</span>    ← Move to shape start
+<span class="point-type">C</span> <span class="coordinates">102.236 16.1169 101.524 16.4099 100.988 16.9457</span>    ← Top curve
+<span class="point-type">L</span> <span class="coordinates">77.221 40.7149</span>    ← Diagonal line down-left
+<span class="point-type">C</span> <span class="coordinates">76.6852 41.2508 76.3922 41.9624 76.3922 42.7159</span>    ← Corner curve
+<span class="point-type">V</span> <span class="coordinates">97.17</span>    ← Vertical line down
+<span class="point-type">C</span> <span class="coordinates">76.3922 98.9449 77.8405 100.008 79.2469 100.008</span>    ← Bottom curve
+<span class="point-type">C</span> <span class="coordinates">80.0004 100.008 80.6785 99.7236 81.231 99.171</span>    ← Transition curve
+<span class="point-type">L</span> <span class="coordinates">144.764 35.591</span>    ← Diagonal line up-right
+<span class="point-type">C</span> <span class="coordinates">145.292 35.0636 145.593 34.3352 145.593 33.59</span>    ← Top curve
+<span class="point-type">V</span> <span class="coordinates">18.9467</span>    ← Vertical line up
+<span class="point-type">C</span> <span class="coordinates">145.593 17.3895 144.321 16.1169 142.763 16.1169</span>    ← Top corner
+<span class="point-type">H</span> <span class="coordinates">102.998</span>    ← Horizontal line
+<span class="point-type">H</span> <span class="coordinates">102.989</span>    ← Final horizontal close
+<span class="point-type">Z</span>    ← Close path</div>
+            </div>
+            
+            <div class="path-section">
+                <h4>🎯 Interactive Point Legend</h4>
+                <div class="path-points"><strong>Point Color Coding:</strong>
+• <span style="color: #007AFF;">🔵 Blue Points (1-10)</span> - Main container shape
+• <span style="color: #FF6464;">🔴 Red Points (11-16)</span> - Left vertical bar
+• <span style="color: #32FF32;">🟢 Green Points (17-24)</span> - Upper right diagonal shape  
+• <span style="color: #FF64FF;">🟣 Purple Points (25-32)</span> - Lower left diagonal shape
+
+<strong>Interaction:</strong>
+• Hover over any point to see coordinates and type
+• Click any point to copy its information to clipboard
+• Use "Hide/Show Points" button to toggle visibility
+• Points scale and change color on hover for better visibility
+                </div>
+            </div>
+            
+            <div class="path-section">
+                <h4>📋 Point Reference Table</h4>
+                <div class="path-points"><strong>Main Shape (Blue - Points 1-10):</strong>
+1: Move 17.5639, 233.992    6: Curve 247, 17.5653
+2: Curve 0, 216.435         7: Vertical 247, 74.4473
+3: Vertical 0, 17.5569      8: Curve 241.86, 86.8636
+4: Curve 17.5639, 0         9: Line 99.8749, 228.859
+5: Horizontal 229.444, 0    10: Curve 87.4596, 234
+
+<strong>Left Bar (Red - Points 11-16):</strong>
+11: Move 18.9453, 16.1169   14: Horizontal 57.4469, 189.417
+12: Curve 16.1156, 18.9467  15: Curve 60.2766, 186.587
+13: Vertical 16.1156, 186.587  16: Vertical 60.2766, 18.9384
+
+<strong>Upper Right (Green - Points 17-24):</strong>
+17: Move 188.289, 16.1169   21: Vertical 76.4005, 182.426
+18: Curve 186.288, 16.9457  22: Curve 81.231, 184.427
+19: Line 77.2294, 125.921   23: Line 230.056, 35.5743
+20: Curve 76.4005, 127.922  24: Curve 230.884, 33.5733
+
+<strong>Lower Left (Purple - Points 25-32):</strong>
+25: Move 102.989, 16.1169   29: Vertical 76.3922, 97.17
+26: Curve 100.988, 16.9457  30: Curve 81.231, 99.171
+27: Line 77.221, 40.7149    31: Line 144.764, 35.591
+28: Curve 76.3922, 42.7159  32: Curve 145.593, 33.59
+                </div>
+            </div>
+            
+            <div class="path-section">
+                <h4>📊 Animation-Ready Key Points Summary</h4>
+                <div class="path-points"><strong>Critical Animation Points:</strong>
+• Corner points: (0,0), (247,0), (247,74.4), (0,234)
+• Cut-out diagonal: (99.87, 228.86) to (241.86, 86.86)
+• Left bar: (16.12, 16.12) to (60.28, 189.42)
+• Upper shape: (188.29, 16.12) to (230.88, 185.26)
+• Lower shape: (102.99, 16.12) to (145.59, 100.01)
+
+<strong>Key Curves for Morphing:</strong>
+• Main container curves: 8 cubic bezier points
+• Internal shape curves: 12+ cubic bezier points
+• Total controllable points: ~45 coordinate pairs
+
+<strong>Animation Possibilities:</strong>
+• Morph the diagonal cut-out line
+• Animate internal shapes independently
+• Transform corner radius values
+• Scale individual components
+• Path drawing/revealing effects</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const animatedPath = document.getElementById('animatedPath');
+        const durationSlider = document.getElementById('duration');
+        const durationValue = document.getElementById('durationValue');
+        const tooltip = document.getElementById('pointTooltip');
+        
+        // Update duration display
+        durationSlider.addEventListener('input', (e) => {
+            durationValue.textContent = e.target.value + 's';
+        });
+        
+        // Interactive Points Functionality
+        function initializeInteractivePoints() {
+            const hoverPoints = document.querySelectorAll('.hover-point');
+            
+            hoverPoints.forEach(point => {
+                point.addEventListener('mouseenter', (e) => {
+                    showTooltip(e, point);
+                });
+                
+                point.addEventListener('mouseleave', () => {
+                    hideTooltip();
+                });
+                
+                point.addEventListener('mousemove', (e) => {
+                    updateTooltipPosition(e);
+                });
+                
+                point.addEventListener('click', (e) => {
+                    copyToClipboard(point);
+                    showCopyFeedback(e);
+                });
+            });
+        }
+        
+        function showTooltip(event, point) {
+            const coords = point.getAttribute('data-coords');
+            const type = point.getAttribute('data-type');
+            const number = point.getAttribute('data-number');
+            
+            tooltip.querySelector('.tooltip-coords').textContent = `(${coords})`;
+            tooltip.querySelector('.tooltip-type').textContent = `${type} Command`;
+            tooltip.querySelector('.tooltip-desc').textContent = `Point #${number}`;
+            
+            updateTooltipPosition(event);
+            tooltip.classList.add('visible');
+        }
+        
+        function hideTooltip() {
+            tooltip.classList.remove('visible');
+        }
+        
+        function updateTooltipPosition(event) {
+            const rect = event.target.closest('svg').getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            tooltip.style.left = x + 'px';
+            tooltip.style.top = (y - 10) + 'px';
+        }
+        
+        function copyToClipboard(point) {
+            const coords = point.getAttribute('data-coords');
+            const type = point.getAttribute('data-type');
+            const number = point.getAttribute('data-number');
+            
+            const textToCopy = `Point #${number}: ${type} ${coords}`;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(textToCopy);
+            } else {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = textToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+        }
+        
+        function showCopyFeedback(event) {
+            // Create a temporary feedback element
+            const feedback = document.createElement('div');
+            feedback.textContent = 'Copied!';
+            feedback.style.cssText = `
+                position: absolute;
+                background: rgba(0, 255, 0, 0.9);
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 10px;
+                pointer-events: none;
+                z-index: 1001;
+                animation: fadeOut 1s ease-out forwards;
+            `;
+            
+            const rect = event.target.closest('svg').getBoundingClientRect();
+            feedback.style.left = (event.clientX - rect.left) + 'px';
+            feedback.style.top = (event.clientY - rect.top - 30) + 'px';
+            
+            // Add fade out animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeOut {
+                    0% { opacity: 1; transform: translateY(0); }
+                    100% { opacity: 0; transform: translateY(-10px); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            event.target.closest('.svg-wrapper').appendChild(feedback);
+            
+            setTimeout(() => {
+                if (feedback.parentNode) {
+                    feedback.parentNode.removeChild(feedback);
+                }
+                if (style.parentNode) {
+                    style.parentNode.removeChild(style);
+                }
+            }, 1000);
+        }
+        
+        // Toggle interactive points visibility
+        function toggleInteractivePoints() {
+            const pointGroup = document.getElementById('interactivePoints');
+            const toggleBtn = document.getElementById('togglePoints');
+            
+            if (pointGroup.style.display === 'none') {
+                pointGroup.style.display = 'block';
+                toggleBtn.textContent = 'Hide Points';
+            } else {
+                pointGroup.style.display = 'none';
+                toggleBtn.textContent = 'Show Points';
+                hideTooltip(); // Hide tooltip when points are hidden
+            }
+        }
+        
+        // Toggle hover animation example
+        function toggleHoverAnimation() {
+            const container = document.querySelector('.container');
+            const toggleBtn = document.getElementById('enableHoverAnimation');
+            
+            if (container.classList.contains('hover-animation-enabled')) {
+                container.classList.remove('hover-animation-enabled');
+                toggleBtn.textContent = 'Enable Hover Animation';
+                toggleBtn.style.background = '#007AFF';
+            } else {
+                container.classList.add('hover-animation-enabled');
+                toggleBtn.textContent = 'Disable Hover Animation';
+                toggleBtn.style.background = '#FF6B6B';
+            }
+        }
+        
+        // Initialize interactive points when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeInteractivePoints();
+            
+            // Enable hover animation by default
+            const container = document.querySelector('.container');
+            const toggleBtn = document.getElementById('enableHoverAnimation');
+            
+            container.classList.add('hover-animation-enabled');
+            if (toggleBtn) {
+                toggleBtn.textContent = 'Disable Hover Animation';
+                toggleBtn.style.background = '#FF6B6B';
+            }
+        });
+        
+        function applyAnimation() {
+            const animationType = document.getElementById('animationType').value;
+            const duration = document.getElementById('duration').value;
+            const fillColor = document.getElementById('fillColor').value;
+            const strokeColor = document.getElementById('strokeColor').value;
+            
+            // Reset classes
+            animatedPath.classList.remove('animate-morph', 'animate-draw');
+            
+            // Apply colors
+            animatedPath.style.fill = fillColor;
+            animatedPath.style.stroke = strokeColor;
+            
+            // Apply animation
+            if (animationType === 'morph') {
+                animatedPath.classList.add('animate-morph');
+                animatedPath.style.animationDuration = duration + 's';
+            } else if (animationType === 'draw') {
+                animatedPath.classList.add('animate-draw');
+                animatedPath.style.animationDuration = duration + 's';
+                animatedPath.style.fill = 'none';
+                animatedPath.style.strokeWidth = '3';
+            } else if (animationType === 'custom') {
+                // Custom animation - modify specific points
+                morphToCustomShape(duration);
+            }
+        }
+        
+        function resetAnimation() {
+            animatedPath.classList.remove('animate-morph', 'animate-draw');
+            animatedPath.style.animation = '';
+            animatedPath.style.fill = 'rgba(0, 122, 255, 0.6)';
+            animatedPath.style.stroke = 'rgba(0, 122, 255, 0.8)';
+            animatedPath.style.strokeWidth = '2';
+        }
+        
+        function morphToCustomShape(duration) {
+            // Example: Create a custom morph by modifying key points
+            const originalPath = animatedPath.getAttribute('d');
+            const morphedPath = originalPath.replace(/99\.8749 228\.859/, '150 150'); // Move the diagonal point
+            
+            // Create keyframe animation
+            const keyframes = `
+                @keyframes customMorph {
+                    0% { d: path("${originalPath}"); }
+                    50% { d: path("${morphedPath}"); }
+                    100% { d: path("${originalPath}"); }
+                }
+            `;
+            
+            // Add keyframes to page
+            const style = document.createElement('style');
+            style.textContent = keyframes;
+            document.head.appendChild(style);
+            
+            // Apply animation
+            animatedPath.style.animation = `customMorph ${duration}s ease-in-out infinite`;
+        }
+        
+        function exportKeyframes() {
+            const animationType = document.getElementById('animationType').value;
+            const duration = document.getElementById('duration').value;
+            
+            let keyframeCSS = '';
+            
+            if (animationType === 'morph') {
+                keyframeCSS = `
+/* Morph Animation Keyframes */
+@keyframes logoMorph {
+    0% {
+        d: path("M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992Z");
+    }
+    50% {
+        d: path("M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L150 150L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992Z");
+    }
+    100% {
+        d: path("M17.5639 233.992C7.87781 233.992 0 226.113 0 216.435V17.5569C0 7.87005 7.87781 0 17.5639 0H229.444C239.131 0 247 7.87842 247 17.5653V74.4473C247 79.1359 245.175 83.5481 241.86 86.8636L99.8749 228.859C96.5597 232.175 92.1478 234 87.4596 234H17.5639V233.992Z");
+    }
+}
+
+.logo-animate {
+    animation: logoMorph ${duration}s ease-in-out infinite;
+}`;
+            } else if (animationType === 'draw') {
+                keyframeCSS = `
+/* Draw Animation Keyframes */
+@keyframes logoDraw {
+    from {
+        stroke-dashoffset: 1000;
+    }
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.logo-draw {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: logoDraw ${duration}s ease-in-out forwards;
+    fill: none;
+    stroke-width: 3;
+}`;
+            }
+            
+            // Display in console and create downloadable file
+            console.log(keyframeCSS);
+            
+            // Create and download CSS file
+            const blob = new Blob([keyframeCSS], { type: 'text/css' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'logo-animation-keyframes.css';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('Keyframes exported! Check your downloads folder for logo-animation-keyframes.css');
+        }
+    </script>
+</body>
+</html> 

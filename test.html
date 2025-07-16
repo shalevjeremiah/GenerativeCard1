@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Art Generator with Live Equalizer Displacement</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .canvas-container {
+            position: relative;
+            margin: 20px;
+            overflow: hidden;
+            width: 468.48px;
+            height: 216.96px;
+            border: 1px solid #333;
+            background: black;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        #artCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            z-index: 1;
+            transition: filter 0.3s ease;
+        }
+        #artCanvas.blur-enabled {
+            filter: blur(var(--blur-amount, 5px));
+        }
+        #displacementCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        /* Equalizer Canvas - Hidden but used for displacement */
+        #equalizerCanvas {
+            position: absolute;
+            top: -1000px; /* Hide off-screen */
+            left: -1000px;
+            width: 468.48px;
+            height: 216.96px;
+            pointer-events: none;
+        }
+        
+        /* Hover overlay for equalizer effects */
+        .hover-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5; /* Between art canvas and displacement canvas */
+            pointer-events: all;
+            cursor: pointer;
+            opacity: 0; /* Invisible but interactive */
+        }
+        
+        .controls {
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 600px;
+        }
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        input[type="range"] {
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 2px;
+        }
+        button:hover {
+            background: #444;
+        }
+        .emotions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        /* Equalizer Controls Section */
+        .equalizer-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .equalizer-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .equalizer-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .recording-status {
+            text-align: center;
+            color: #00ff88;
+            font-size: 14px;
+            margin: 10px 0;
+            min-height: 20px;
+            font-weight: bold;
+        }
+        
+        .record-btn {
+            background: linear-gradient(45deg, #ff4444, #cc2222) !important;
+            font-size: 16px !important;
+            padding: 15px 25px !important;
+            font-weight: bold !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 15px rgba(255, 68, 68, 0.3) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .record-btn:hover {
+            background: linear-gradient(45deg, #ff6666, #dd3333) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4) !important;
+        }
+        
+        .play-btn {
+            background: linear-gradient(45deg, #44ff44, #22cc22) !important;
+        }
+        
+        .play-btn:hover {
+            background: linear-gradient(45deg, #66ff66, #33dd33) !important;
+        }
+        
+        .displacement-controls {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas-container">
+        <canvas id="artCanvas" width="468.48" height="216.96"></canvas>
+        <canvas id="displacementCanvas" width="468.48" height="216.96"></canvas>
+        <!-- Hidden equalizer canvas for displacement -->
+        <canvas id="equalizerCanvas" width="468.48" height="216.96"></canvas>
+        <!-- Invisible hover overlay for equalizer interaction -->
+        <div class="hover-overlay" id="hoverOverlay"></div>
+    </div>
+    
+    <div class="controls">
+        <!-- Art Generation Controls -->
+        <div class="control-group">
+            <label>Recording Length (s):</label>
+            <input type="range" id="recordingLength" min="1" max="5" value="3.6" step="0.1">
+            <span id="recordingLengthValue">3.6</span>
+        </div>
+        <div class="control-group">
+            <label>Word Count:</label>
+            <input type="range" id="wordCount" min="1" max="15" value="9">
+            <span id="wordCountValue">9</span>
+        </div>
+        <div class="control-group">
+            <label>Name:</label>
+            <input type="text" id="name" value="shalev jeremiah">
+        </div>
+        
+        <div class="emotions-grid">
+            <div class="control-group">
+                <label>Joy:</label>
+                <input type="range" id="joy" min="0" max="100" value="0">
+                <span id="joyValue">0</span>
+            </div>
+            <div class="control-group">
+                <label>Sadness:</label>
+                <input type="range" id="sadness" min="0" max="100" value="75">
+                <span id="sadnessValue">0.75</span>
+            </div>
+            <div class="control-group">
+                <label>Anger:</label>
+                <input type="range" id="anger" min="0" max="100" value="0">
+                <span id="angerValue">0</span>
+            </div>
+            <div class="control-group">
+                <label>Fear:</label>
+                <input type="range" id="fear" min="0" max="100" value="30">
+                <span id="fearValue">0.3</span>
+            </div>
+            <div class="control-group">
+                <label>Disgust:</label>
+                <input type="range" id="disgust" min="0" max="100" value="0">
+                <span id="disgustValue">0</span>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <button id="toggleBlur">Toggle Blur</button>
+            <label>Blur Amount:</label>
+            <input type="range" id="blurAmount" min="0" max="20" value="20" step="0.5">
+            <span id="blurAmountValue">20</span>
+        </div>
+        
+        <button id="generate">Generate Art</button>
+        
+        <!-- Hover Displacement Controls -->
+        <div class="equalizer-section">
+            <div class="equalizer-title">✨ Hover Displacement</div>
+            <div id="displacementStatus" class="recording-status">Hover over the canvas to see displacement effects</div>
+        </div>
+        
+        <!-- Debug Controls -->
+        <div class="control-group">
+            <button id="testDisplacement">Test Displacement Effect</button>
+            <button id="testHighDisplacement">Test HIGH Displacement</button>
+            <button id="debugStatus">Debug Status</button>
+            <button id="testSimpleWebGL">Test Simple WebGL</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+    <script src="webgl_displacement.js"></script>
+    <script src="glassEffect.js"></script>
+    <script src="artGenerator.js"></script>
+    <script>
+        // Chrome Equalizer Class (Embedded)
+        class ChromeEqualizer {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.width = 468.48;
+                this.height = 216.96;
+                this.isRunning = false;
+                this.animationId = null;
+                this.bars = [];
+                this.time = 0;
+                
+                // Mouse interaction properties
+                this.mouseX = -1;
+                this.mouseY = -1;
+                this.isMouseOver = false;
+                this.hoverRadius = 80;
+                this.maxWidthMultiplier = 2.5;
+                
+                // Simple hover-based mode
+                this.mode = 'static';
+                
+                // Single mode (always use single mode for displacement)
+                this.singleMode = true;
+                this.barCount = 15;
+                this.updateDimensions();
+                
+                this.initializeBars();
+                this.setupMouseEvents();
+            }
+            
+            updateDimensions() {
+                // Single equalizer mode - use full canvas
+                this.barWidth = this.width / this.barCount;
+                this.equalizerWidth = this.width;
+                this.equalizerHeight = this.height;
+                this.maxBarHeight = this.equalizerHeight; // Full canvas height
+                this.minBarHeight = 8; // Reduced minimum for better range
+                
+                // Update base widths and positions for existing bars
+                if (this.bars && this.bars.length > 0) {
+                    for (let i = 0; i < this.bars.length; i++) {
+                        this.bars[i].x = i * this.barWidth;
+                        this.bars[i].baseX = i * this.barWidth;
+                        this.bars[i].targetX = i * this.barWidth;
+                        this.bars[i].baseWidth = this.barWidth;
+                        this.bars[i].currentWidth = this.barWidth;
+                        this.bars[i].targetWidth = this.barWidth;
+                    }
+                }
+            }
+            
+            initializeBars() {
+                this.bars = [];
+                for (let i = 0; i < this.barCount; i++) {
+                    this.bars.push({
+                        height: this.minBarHeight,
+                        targetHeight: this.minBarHeight,
+                        x: i * this.barWidth,
+                        baseX: i * this.barWidth,
+                        targetX: i * this.barWidth,
+                        frequency: Math.random() * 0.08 + 0.03,
+                        phase: Math.random() * Math.PI * 2,
+                        baseWidth: this.barWidth,
+                        currentWidth: this.barWidth,
+                        targetWidth: this.barWidth
+                    });
+                }
+            }
+            
+            setupMouseEvents() {
+                // Use the hover overlay instead of the hidden canvas
+                const hoverOverlay = document.getElementById('hoverOverlay');
+                if (hoverOverlay) {
+                    hoverOverlay.addEventListener('mousemove', (e) => {
+                        const rect = hoverOverlay.getBoundingClientRect();
+                        this.mouseX = (e.clientX - rect.left) * (this.canvas.width / rect.width);
+                        this.mouseY = (e.clientY - rect.top) * (this.canvas.height / rect.height);
+                        this.isMouseOver = true;
+                    });
+                    
+                    hoverOverlay.addEventListener('mouseleave', () => {
+                        this.isMouseOver = false;
+                        this.mouseX = -1;
+                        this.mouseY = -1;
+                    });
+                    
+                    hoverOverlay.addEventListener('mouseenter', () => {
+                        this.isMouseOver = true;
+                    });
+                }
+            }
+            
+
+            
+            updateAudioData() {
+                // Simple static bars - all at full height when not hovering
+                for (let i = 0; i < this.bars.length; i++) {
+                    const bar = this.bars[i];
+                    bar.targetHeight = this.maxBarHeight; // Full height
+                    
+                    // Smooth transition
+                    const smoothing = 0.08;
+                    bar.height += (bar.targetHeight - bar.height) * smoothing;
+                }
+            }
+            
+
+            
+            calculateHoverEffect() {
+                if (!this.isMouseOver) {
+                    for (let i = 0; i < this.bars.length; i++) {
+                        this.bars[i].targetWidth = this.bars[i].baseWidth;
+                        this.bars[i].targetX = this.bars[i].baseX;
+                    }
+                    return;
+                }
+                
+                const influences = [];
+                let totalInfluence = 0;
+                
+                for (let i = 0; i < this.bars.length; i++) {
+                    const bar = this.bars[i];
+                    const barCenterX = bar.baseX + this.barWidth / 2;
+                    
+                    // Only use horizontal distance - ignore Y coordinate
+                    const distance = Math.abs(this.mouseX - barCenterX);
+                    
+                    let influence = 0;
+                    if (distance <= this.hoverRadius) {
+                        const normalizedDistance = distance / this.hoverRadius;
+                        influence = (Math.cos(normalizedDistance * Math.PI) + 1) / 2;
+                    }
+                    
+                    influences[i] = influence;
+                    totalInfluence += influence;
+                }
+                
+                const totalAvailableWidth = this.width;
+                
+                if (totalInfluence > 0) {
+                    const desiredWidths = [];
+                    let totalDesiredWidth = 0;
+                    
+                    for (let i = 0; i < this.bars.length; i++) {
+                        const influence = influences[i];
+                        const expansion = influence * this.barWidth * (this.maxWidthMultiplier - 1);
+                        const desiredWidth = this.bars[i].baseWidth + expansion;
+                        desiredWidths[i] = desiredWidth;
+                        totalDesiredWidth += desiredWidth;
+                    }
+                    
+                    const scaleFactor = totalAvailableWidth / totalDesiredWidth;
+                    
+                    for (let i = 0; i < this.bars.length; i++) {
+                        this.bars[i].targetWidth = Math.max(
+                            desiredWidths[i] * scaleFactor,
+                            this.bars[i].baseWidth * 0.3
+                        );
+                    }
+                } else {
+                    for (let i = 0; i < this.bars.length; i++) {
+                        this.bars[i].targetWidth = this.bars[i].baseWidth;
+                    }
+                }
+                
+                let currentX = 0;
+                for (let i = 0; i < this.bars.length; i++) {
+                    this.bars[i].targetX = currentX;
+                    currentX += this.bars[i].targetWidth;
+                }
+            }
+            
+            updateBarWidths() {
+                for (let i = 0; i < this.bars.length; i++) {
+                    const bar = this.bars[i];
+                    const smoothing = 0.15;
+                    bar.currentWidth += (bar.targetWidth - bar.currentWidth) * smoothing;
+                    bar.x += (bar.targetX - bar.x) * smoothing;
+                }
+            }
+            
+            start() {
+                this.isRunning = true;
+                this.animate();
+            }
+            
+            stop() {
+                this.isRunning = false;
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                this.clear();
+            }
+            
+            clear() {
+                // Clear with transparent background for displacement mapping
+                this.ctx.clearRect(0, 0, this.width, this.height);
+                // Don't fill with black - keep transparent for proper displacement
+            }
+            
+            animate() {
+                if (!this.isRunning) return;
+                
+                this.updateAudioData();
+                this.calculateHoverEffect();
+                this.updateBarWidths();
+                this.renderChrome();
+                
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+            
+            renderChrome() {
+                this.clear();
+                
+                // Single equalizer mode - centered, full canvas
+                for (let i = 0; i < this.bars.length; i++) {
+                    const bar = this.bars[i];
+                    const barX = bar.x;
+                    const barY = (this.height - bar.height) / 2;
+                    
+                    // Calculate fade zones (20% of bar height for smooth blending)
+                    const fadeHeight = Math.min(bar.height * 0.2, 25);
+                    
+                    // Create a temporary canvas for each bar to avoid compositing issues
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = bar.currentWidth;
+                    tempCanvas.height = bar.height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    
+                    // Create a vertical alpha mask for fading on temp canvas
+                    const maskGradient = tempCtx.createLinearGradient(0, 0, 0, bar.height);
+                    maskGradient.addColorStop(0, 'rgba(255, 255, 255, 0)'); // Transparent at top
+                    maskGradient.addColorStop(fadeHeight / bar.height, 'rgba(255, 255, 255, 1)'); // Opaque
+                    maskGradient.addColorStop(1 - (fadeHeight / bar.height), 'rgba(255, 255, 255, 1)'); // Opaque
+                    maskGradient.addColorStop(1, 'rgba(255, 255, 255, 0)'); // Transparent at bottom
+                    
+                    // Draw the alpha mask on temp canvas
+                    tempCtx.fillStyle = maskGradient;
+                    tempCtx.fillRect(0, 0, bar.currentWidth, bar.height);
+                    
+                    // Set composite mode to multiply the chrome gradient with the alpha mask
+                    tempCtx.globalCompositeOperation = 'source-in';
+                    
+                    // Create horizontal chrome gradient (black to white) on temp canvas
+                    const chromeGradient = tempCtx.createLinearGradient(0, 0, bar.currentWidth, 0);
+                    chromeGradient.addColorStop(0, '#000000');
+                    chromeGradient.addColorStop(1, '#ffffff');
+                    
+                    // Draw the chrome gradient over the alpha mask on temp canvas
+                    tempCtx.fillStyle = chromeGradient;
+                    tempCtx.fillRect(0, 0, bar.currentWidth, bar.height);
+                    
+                    // Draw the completed bar from temp canvas to main canvas
+                    this.ctx.drawImage(tempCanvas, barX, barY);
+                }
+            }
+            
+
+        }
+
+        // Global variables
+        let chromeEqualizer;
+        let artGenerator;
+        let isLiveDisplacementEnabled = false;
+        let displacementAnimationId = null;
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize the art generator
+            const canvas = document.getElementById('artCanvas');
+            canvas.width = 468.48;
+            canvas.height = 216.96;
+            artGenerator = new ArtGenerator(canvas);
+
+            // Ensure displacement canvas matches art canvas exactly
+            const dispCanvas = document.getElementById('displacementCanvas');
+            dispCanvas.width = canvas.width;
+            dispCanvas.height = canvas.height;
+            
+            // Ensure equalizer canvas matches art canvas exactly
+            const eqCanvas = document.getElementById('equalizerCanvas');
+            eqCanvas.width = canvas.width;
+            eqCanvas.height = canvas.height;
+
+            // Initialize the equalizer
+            chromeEqualizer = new ChromeEqualizer('equalizerCanvas');
+            
+            // Start the static equalizer
+            chromeEqualizer.start();
+            
+            // Start live displacement automatically
+            startLiveDisplacement();
+            
+            console.log('✅ Art Generator and Equalizer initialized');
+            console.log('📐 Canvas dimensions:', canvas.width, 'x', canvas.height);
+        });
+
+
+
+        // Live displacement functionality
+        function startLiveDisplacement() {
+            if (!chromeEqualizer || !artGenerator || !artGenerator.webglDisplacement) {
+                console.error('Required components not initialized');
+                return;
+            }
+            
+            isLiveDisplacementEnabled = true;
+            
+            function updateDisplacement() {
+                if (!isLiveDisplacementEnabled) return;
+                
+                // Clear the displacement canvas first to prevent overlay buildup
+                const dispCanvas = document.getElementById('displacementCanvas');
+                const gl = dispCanvas.getContext('webgl');
+                if (gl) {
+                    gl.clearColor(0, 0, 0, 0); // Transparent clear
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                }
+                
+                // Always apply displacement - the bars themselves handle hover effects
+                const intensity = 50;
+                
+                // Apply the equalizer canvas as displacement map
+                if (artGenerator.webglDisplacement.initialized) {
+                    artGenerator.webglDisplacement.applyCanvasAsDisplacement(
+                        artGenerator.canvas, 
+                        chromeEqualizer.canvas, 
+                        intensity
+                    );
+                }
+                
+                displacementAnimationId = requestAnimationFrame(updateDisplacement);
+            }
+            
+            updateDisplacement();
+            console.log('✅ Live displacement started');
+        }
+
+        function stopLiveDisplacement() {
+            isLiveDisplacementEnabled = false;
+            if (displacementAnimationId) {
+                cancelAnimationFrame(displacementAnimationId);
+                displacementAnimationId = null;
+            }
+            
+            // Clear the displacement canvas to remove any overlay
+            const dispCanvas = document.getElementById('displacementCanvas');
+            const gl = dispCanvas.getContext('webgl');
+            if (gl) {
+                gl.clearColor(0, 0, 0, 0); // Transparent clear
+                gl.clear(gl.COLOR_BUFFER_BIT);
+            }
+            
+            console.log('⏹️ Live displacement stopped and cleared');
+        }
+
+        // Update value displays
+        function updateValue(id) {
+            const input = document.getElementById(id);
+            const display = document.getElementById(id + 'Value');
+            if (id === 'recordingLength' || id === 'blurAmount') {
+                display.textContent = parseFloat(input.value).toFixed(1);
+            } else if (id === 'wordCount') {
+                display.textContent = input.value;
+            } else {
+                display.textContent = (input.value / 100).toFixed(2);
+            }
+        }
+
+        // Add event listeners for all controls
+        ['recordingLength', 'wordCount', 'joy', 'sadness', 'anger', 'fear', 'disgust'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', () => {
+                    updateValue(id);
+                    document.getElementById('generate').click();
+                });
+            }
+        });
+
+        // Generate art button
+        document.getElementById('generate').addEventListener('click', () => {
+            const params = {
+                recordingLength: parseFloat(document.getElementById('recordingLength').value),
+                wordCount: parseInt(document.getElementById('wordCount').value),
+                authorName: document.getElementById('name').value,
+                emotions: {
+                    joy: parseInt(document.getElementById('joy').value) / 100,
+                    sadness: parseInt(document.getElementById('sadness').value) / 100,
+                    anger: parseInt(document.getElementById('anger').value) / 100,
+                    fear: parseInt(document.getElementById('fear').value) / 100,
+                    disgust: parseInt(document.getElementById('disgust').value) / 100
+                },
+                date: new Date()
+            };
+
+            if (artGenerator) {
+                artGenerator.generateArt(params);
+            }
+        });
+
+
+
+        // Blur controls
+        const blurSlider = document.getElementById('blurAmount');
+        const blurValueDisplay = document.getElementById('blurAmountValue');
+        
+        document.getElementById('toggleBlur').addEventListener('click', () => {
+            const canvas = document.getElementById('artCanvas');
+            canvas.classList.toggle('blur-enabled');
+            updateBlur();
+        });
+
+        blurSlider.addEventListener('input', () => {
+            updateValue('blurAmount');
+            updateBlur();
+        });
+
+        function updateBlur() {
+            const canvas = document.getElementById('artCanvas');
+            const amount = blurSlider.value;
+            canvas.style.setProperty('--blur-amount', `${amount}px`);
+        }
+
+        // Name input
+        document.getElementById('name').addEventListener('input', () => {
+            document.getElementById('generate').click();
+        });
+
+        // Debug and test buttons
+        document.getElementById('testDisplacement').addEventListener('click', () => {
+            console.log('Manual displacement test triggered');
+            if (artGenerator && artGenerator.glassDisplacementEffect) {
+                artGenerator.glassDisplacementEffect.apply();
+            }
+        });
+
+        document.getElementById('testHighDisplacement').addEventListener('click', () => {
+            console.log('Manual WebGL displacement test triggered');
+            if (artGenerator && artGenerator.webglDisplacement && artGenerator.webglDisplacement.initialized) {
+                artGenerator.webglDisplacement.apply(artGenerator.canvas, 100);
+            }
+        });
+
+        document.getElementById('debugStatus').addEventListener('click', () => {
+            console.log('=== DEBUG STATUS ===');
+            console.log('Art Generator:', artGenerator);
+            console.log('Chrome Equalizer:', chromeEqualizer);
+            console.log('Live Displacement Enabled:', isLiveDisplacementEnabled);
+            console.log('WebGL Displacement:', artGenerator?.webglDisplacement);
+            console.log('Equalizer Canvas:', document.getElementById('equalizerCanvas'));
+        });
+
+        document.getElementById('testSimpleWebGL').addEventListener('click', () => {
+            const dispCanvas = document.getElementById('displacementCanvas');
+            const gl = dispCanvas.getContext('webgl');
+            
+            if (gl) {
+                console.log('✅ WebGL context available');
+                gl.clearColor(1.0, 0.0, 0.0, 0.5);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                console.log('✅ Red color rendered to displacement canvas');
+            } else {
+                console.error('❌ No WebGL context available');
+            }
+        });
+
+        // Initialize blur and generate initial art
+        setTimeout(() => {
+            updateBlur();
+            const canvas = document.getElementById('artCanvas');
+            canvas.classList.add('blur-enabled');
+            document.getElementById('generate').click();
+        }, 100);
+    </script>
+</body>
+</html> 

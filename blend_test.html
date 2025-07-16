@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blend Mode Test</title>
+    <style>
+        :root {
+            --generated-art-url: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop');
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #2c3e50;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        /* Dynamic background like in main app */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #000;
+            background-image: var(--generated-art-url);
+            background-size: 100vw auto;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(100px) brightness(0.5);
+            z-index: -1;
+            transform: scale(1.5);
+        }
+
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+        }
+
+        .test-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .test-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Test 1: Your original example approach */
+        .wrapper {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            border: 2px solid white;
+        }
+
+        .first,
+        .second {
+            width: 300px;
+            height: 200px;
+            position: absolute;
+        }
+
+        .first {
+            background: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop') 0 0 no-repeat;
+            background-size: cover;
+            z-index: 9;
+            top: 0px;
+            left: 0px;
+        }
+
+        .second {
+            background: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=200&fit=crop') 0 0 no-repeat;
+            background-size: cover;
+            z-index: 10;
+            mix-blend-mode: overlay;
+            top: 30px;
+            left: 120px;
+        }
+
+        /* Test 2: Tab-like structure with pseudo-elements */
+        .tab-test {
+            width: 300px;
+            height: 150px;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+            color: #fff;
+            border: 2px solid white;
+        }
+
+        .tab-test::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            border-radius: 10px;
+            z-index: 9;
+        }
+
+        .tab-test::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: var(--generated-art-url);
+            background-size: cover;
+            background-position: center;
+            mix-blend-mode: overlay;
+            border-radius: 10px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .tab-test .content {
+            position: relative;
+            z-index: 11;
+            color: #000;
+        }
+
+        /* Test 3: Simple overlay on body background */
+        .simple-overlay {
+            width: 300px;
+            height: 150px;
+            background: white;
+            mix-blend-mode: overlay;
+            border-radius: 10px;
+            padding: 20px;
+            color: #000;
+            border: 2px solid white;
+        }
+
+        /* Test 4: Different blend modes */
+        .blend-multiply { mix-blend-mode: multiply; }
+        .blend-screen { mix-blend-mode: screen; }
+        .blend-overlay { mix-blend-mode: overlay; }
+        .blend-soft-light { mix-blend-mode: soft-light; }
+        .blend-hard-light { mix-blend-mode: hard-light; }
+
+        .blend-test-box {
+            width: 200px;
+            height: 100px;
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px;
+            color: #000;
+            text-align: center;
+            line-height: 80px;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        /* Test 5: CSS Variable background test */
+        .css-var-test {
+            width: 300px;
+            height: 150px;
+            background-image: var(--generated-art-url);
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            padding: 20px;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .overlay-layer {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            mix-blend-mode: overlay;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+        }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+
+        .controls button {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .controls button:hover {
+            background: #0056b3;
+        }
+
+        /* ===== Test 6 styles ===== */
+        body.test6-bg {
+            background:#0a1a36; /* deep blue */
+        }
+        .test6-section{
+            margin-top:40px;
+        }
+        .overlay-box{
+            width:300px;height:150px;
+            background:#fff;
+            mix-blend-mode:overlay;
+            border-radius:10px;
+            position:relative;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+        }
+        .overlay-text{color:#fff;mix-blend-mode:overlay;position:relative;z-index:2;font-family:Arial,sans-serif;}
+        .overlay-main{font-size:20px;font-weight:700;}
+        .two-layer-text{position:relative;display:inline-block;}
+        .two-layer-text .layer{color:#fff;mix-blend-mode:overlay;font-size:14px;font-weight:600;position:absolute;top:0;left:0;}
+        .two-layer-text .layer.top{transform:translateY(0);} /* identical position -> double overlay */
+
+        /* ===== Test 7 styles ===== */
+        .test7-section{margin-top:40px;}
+        .circles-wrapper{
+            position:relative;
+            width:240px;height:120px;
+        }
+        .overlay-circle{
+            position:absolute;
+            width:100px;height:100px;
+            border-radius:50%;
+            background:#fff;
+            mix-blend-mode:overlay;
+            pointer-events:none;
+        }
+        .circle-1{left:0;top:10px;}
+        .circle-2{left:60px;top:10px;}
+        .circle-3{left:120px;top:10px;}
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h3>Background Controls</h3>
+        <button onclick="changeBackground('forest')">Forest Background</button>
+        <button onclick="changeBackground('ocean')">Ocean Background</button>
+        <button onclick="changeBackground('sunset')">Sunset Background</button>
+        <button onclick="changeBackground('city')">City Background</button>
+        <button onclick="changeBackground('none')">No Background</button>
+    </div>
+
+    <h1>Blend Mode Test Page</h1>
+
+    <div class="test-section">
+        <div class="test-title">Test 1: Your Original Example (Two Images)</div>
+        <div class="test-container">
+            <div class="wrapper">
+                <div class="first"></div>
+                <div class="second"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">Test 2: Tab Structure with Pseudo-elements</div>
+        <div class="test-container">
+            <div class="tab-test">
+                <div class="content">
+                    <h4>TAB TITLE</h4>
+                    <p>Tab content here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">Test 3: Simple Overlay on Body Background</div>
+        <div class="test-container">
+            <div class="simple-overlay">
+                <h4>SIMPLE OVERLAY</h4>
+                <p>Direct overlay blend</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">Test 4: Different Blend Modes</div>
+        <div class="test-container">
+            <div class="blend-test-box blend-multiply">Multiply</div>
+            <div class="blend-test-box blend-screen">Screen</div>
+            <div class="blend-test-box blend-overlay">Overlay</div>
+            <div class="blend-test-box blend-soft-light">Soft Light</div>
+            <div class="blend-test-box blend-hard-light">Hard Light</div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">Test 5: CSS Variable Background with Overlay Layer</div>
+        <div class="test-container">
+            <div class="css-var-test">
+                <div class="overlay-layer">
+                    CSS VAR TEST
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function changeBackground(type) {
+            const root = document.documentElement;
+            
+            const backgrounds = {
+                forest: "url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop')",
+                ocean: "url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop')",
+                sunset: "url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop')",
+                city: "url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop')",
+                none: "none"
+            };
+            
+            root.style.setProperty('--generated-art-url', backgrounds[type]);
+            console.log('Background changed to:', type, backgrounds[type]);
+        }
+
+        // Initialize with forest background
+        changeBackground('forest');
+
+        // Enable test6 background on load
+        document.addEventListener('DOMContentLoaded',()=>{
+            document.body.classList.add('test6-bg');
+        });
+    </script>
+
+    <div class="test-section test6-section">
+        <div class="test-title">Test 6: Box + Text (single overlay) & Subtext (double overlay)</div>
+        <div class="test-container">
+            <div class="overlay-box">
+                <div class="overlay-text overlay-main">OVERLAY TEXT</div>
+                <div class="two-layer-text">
+                    <span class="layer bottom">STRONG OVERLAY</span>
+                    <span class="layer top">STRONG OVERLAY</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Test 7: Overlapping circles with overlay ===== -->
+    <div class="test-section test7-section">
+        <div class="test-title">Test 7: Three Overlapping Circles (each overlay)</div>
+        <div class="test-container">
+            <div class="circles-wrapper">
+                <div class="overlay-circle circle-1"></div>
+                <div class="overlay-circle circle-2"></div>
+                <div class="overlay-circle circle-3"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

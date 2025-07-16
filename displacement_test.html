@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Glass Displacement Test</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 1px solid #333;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #444;
+        }
+    </style>
+</head>
+<body>
+    <h1>Glass Displacement Effect Test</h1>
+    <canvas id="testCanvas" width="400" height="300"></canvas>
+    <div>
+        <button id="drawPattern">Draw Test Pattern</button>
+        <button id="applyDisplacement">Apply Glass Displacement</button>
+        <button id="resetCanvas">Reset Canvas</button>
+    </div>
+    <div id="status">Ready</div>
+
+    <script>
+        // Simple Glass Displacement Effect
+        class SimpleGlassDisplacementEffect {
+            constructor(canvas, glassImageUrl, displacementScale = 20) {
+                console.log('Creating SimpleGlassDisplacementEffect with:', glassImageUrl, displacementScale);
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.glassImageUrl = glassImageUrl;
+                this.displacementScale = displacementScale;
+                this.glassImg = new Image();
+                this.glassImgLoaded = false;
+                
+                this.glassImg.onload = () => {
+                    console.log('Glass image loaded successfully:', this.glassImg.width, 'x', this.glassImg.height);
+                    this.glassImgLoaded = true;
+                    document.getElementById('status').textContent = 'Glass image loaded - ready to apply displacement';
+                };
+                
+                this.glassImg.onerror = (e) => {
+                    console.error('Failed to load glass image:', e);
+                    document.getElementById('status').textContent = 'Failed to load glass image';
+                };
+                
+                console.log('Loading glass image from:', glassImageUrl);
+                this.glassImg.src = glassImageUrl;
+            }
+
+            apply() {
+                if (!this.glassImgLoaded) {
+                    console.log('Glass image not loaded yet');
+                    document.getElementById('status').textContent = 'Glass image not loaded yet';
+                    return;
+                }
+                
+                console.log('Applying displacement effect...');
+                document.getElementById('status').textContent = 'Applying displacement effect...';
+                
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+                
+                // Get current canvas content
+                const src = this.ctx.getImageData(0, 0, w, h);
+                const srcData = src.data;
+
+                // Create glass canvas and scale it to match our canvas
+                const glassCanvas = document.createElement('canvas');
+                glassCanvas.width = w;
+                glassCanvas.height = h;
+                const glassCtx = glassCanvas.getContext('2d');
+                glassCtx.drawImage(this.glassImg, 0, 0, w, h);
+                const glassData = glassCtx.getImageData(0, 0, w, h).data;
+
+                // Create output image data
+                const out = this.ctx.createImageData(w, h);
+                const outData = out.data;
+
+                // Apply displacement
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const idx = (y * w + x) * 4;
+                        
+                        // Get glass pixel brightness
+                        const r = glassData[idx];
+                        const g = glassData[idx + 1];
+                        const b = glassData[idx + 2];
+                        const brightness = (r + g + b) / 3;
+                        
+                        // Calculate displacement
+                        const displacement = ((brightness / 255) - 0.5) * this.displacementScale;
+                        const dx = Math.round(displacement);
+                        const dy = Math.round(displacement);
+                        
+                        // Get source pixel with displacement (clamped to canvas bounds)
+                        const sx = Math.max(0, Math.min(w - 1, x + dx));
+                        const sy = Math.max(0, Math.min(h - 1, y + dy));
+                        const sidx = (sy * w + sx) * 4;
+                        
+                        // Copy displaced pixel
+                        outData[idx] = srcData[sidx];
+                        outData[idx + 1] = srcData[sidx + 1];
+                        outData[idx + 2] = srcData[sidx + 2];
+                        outData[idx + 3] = srcData[sidx + 3];
+                    }
+                }
+                
+                // Draw result back to canvas
+                this.ctx.putImageData(out, 0, 0);
+                console.log('Displacement effect applied');
+                document.getElementById('status').textContent = 'Displacement effect applied!';
+            }
+        }
+
+        // Initialize
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+        let displacementEffect;
+
+        // Initialize displacement effect
+        try {
+            displacementEffect = new SimpleGlassDisplacementEffect(canvas, 'Assets/Glass.png', 30);
+        } catch (e) {
+            console.error('Error creating displacement effect:', e);
+            document.getElementById('status').textContent = 'Error creating displacement effect: ' + e.message;
+        }
+
+        // Draw test pattern
+        document.getElementById('drawPattern').addEventListener('click', () => {
+            console.log('Drawing test pattern');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw colorful test pattern
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#ff0000');
+            gradient.addColorStop(0.2, '#ff8800');
+            gradient.addColorStop(0.4, '#ffff00');
+            gradient.addColorStop(0.6, '#00ff00');
+            gradient.addColorStop(0.8, '#0088ff');
+            gradient.addColorStop(1, '#8800ff');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add some geometric shapes
+            ctx.fillStyle = 'white';
+            ctx.fillRect(50, 50, 100, 100);
+            
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(300, 150, 50, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Add text
+            ctx.fillStyle = 'yellow';
+            ctx.font = '24px Arial';
+            ctx.fillText('DISPLACEMENT TEST', 80, 200);
+            
+            document.getElementById('status').textContent = 'Test pattern drawn - ready for displacement';
+        });
+
+        // Apply displacement
+        document.getElementById('applyDisplacement').addEventListener('click', () => {
+            if (displacementEffect) {
+                displacementEffect.apply();
+            } else {
+                document.getElementById('status').textContent = 'Displacement effect not initialized';
+            }
+        });
+
+        // Reset canvas
+        document.getElementById('resetCanvas').addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#333';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('status').textContent = 'Canvas reset';
+        });
+
+        // Initial setup
+        document.getElementById('resetCanvas').click();
+    </script>
+</body>
+</html> 
