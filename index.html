@@ -465,8 +465,29 @@ Enjoy!
     </div>
   </div>
 
+  <!-- API Token Input Modal -->
+  <div id="tokenModal" class="token-modal">
+    <div class="token-modal-content">
+      <div class="token-modal-header">
+        <img src="Assets/logo.svg" class="token-logo" alt="Logo">
+        <h2>🔑 API Token Required</h2>
+      </div>
+      <div class="token-modal-body">
+        <p>Please enter your Hugging Face API token to use emotion analysis:</p>
+        <input type="password" id="tokenInput" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="token-input">
+        <div class="token-instructions">
+          <p><strong>For students:</strong> Your instructor will provide this token privately.</p>
+          <p><strong>Need a token?</strong> <a href="https://huggingface.co/settings/tokens" target="_blank">Get one here</a></p>
+        </div>
+        <button id="tokenSubmit" class="token-submit-btn">Continue</button>
+        <div class="token-error" id="tokenError" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="tokenManager.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
   <script src="webgl_displacement.js"></script>
   <script src="chrome_equalizer.js"></script>

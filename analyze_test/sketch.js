@@ -1,7 +1,11 @@
-// Hugging Face API constants from text_test/script.js
-const HF_API_TOKEN = "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"; // Consider security implications
+// Hugging Face API constants - token managed by tokenManager.js
 const SENTIMENT_URL = "https://api-inference.huggingface.co/models/j-hartmann/emotion-english-distilroberta-base"; // Reverting to more reliable model
 const UNDERSTANDING_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"; // For natural language understanding
+
+// Get API token from token manager
+function getHFToken() {
+    return window.getApiToken && window.getApiToken();
+}
 
 // Enhanced emotion lexicon with more nuanced categories and expressions
 const emotionLexicon = {
@@ -534,10 +538,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function getBaseEmotionScores(text) {
-            const response = await fetch(SENTIMENT_URL, {
-                method: "POST",
+        const token = getHFToken();
+        if (!token) {
+            console.warn('No API token available for emotion analysis');
+            return null;
+        }
+        
+        const response = await fetch(SENTIMENT_URL, {
+            method: "POST",
             headers: {
-                "Authorization": `Bearer ${HF_API_TOKEN}`,
+                "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({ inputs: text }),
@@ -559,11 +569,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function getUnderstanding(text) {
+        const token = getHFToken();
+        if (!token) {
+            console.warn('No API token available for understanding analysis');
+            return null;
+        }
+        
         try {
             const response = await fetch(UNDERSTANDING_URL, {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${HF_API_TOKEN}`,
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({

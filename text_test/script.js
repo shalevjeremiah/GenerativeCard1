@@ -1,8 +1,12 @@
-// Replace with your Hugging Face API token
-const HF_API_TOKEN = "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";
+// API URLs for emotion analysis - token managed by tokenManager.js
 const SENTIMENT_URL = "https://api-inference.huggingface.co/models/j-hartmann/emotion-english-distilroberta-base";
 const ZERO_SHOT_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli";
 const GO_EMO_URL = "https://api-inference.huggingface.co/models/joeddav/distilbert-base-uncased-go-emotions-student";
+
+// Get API token from token manager
+function getHFToken() {
+    return window.getApiToken && window.getApiToken();
+}
 
 // DOM Elements
 let textarea, analyzeBtn, speakBtn, summaryDiv, wordEmotionsDiv, loadingDiv;
@@ -87,10 +91,16 @@ async function analyzeText(text, useZeroShot = false) {
 
     // First: call the base emotion model (roberta-distil)
     let robertaScores = {};
+    const token = getHFToken();
+    if (!token) {
+        console.warn('No API token available for emotion analysis');
+        return fallbackEmotionScores(text);
+    }
+    
     try {
         const response = await fetch(SENTIMENT_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${HF_API_TOKEN}` },
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
             body: JSON.stringify({ inputs: text })
         });
         if (response.ok) {
@@ -117,7 +127,7 @@ async function analyzeText(text, useZeroShot = false) {
             ];
             const zsResp = await fetch(ZERO_SHOT_URL, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${HF_API_TOKEN}` },
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
                 body: JSON.stringify({
                     inputs: text,
                     parameters: { candidate_labels: candidateLabels, multi_label: true }
@@ -141,7 +151,7 @@ async function analyzeText(text, useZeroShot = false) {
     try {
         const goResp = await fetch(GO_EMO_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${HF_API_TOKEN}` },
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
             body: JSON.stringify({ inputs: text })
         });
         if (goResp.ok) {
