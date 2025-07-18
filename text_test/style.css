@@ -774,10 +774,30 @@ button:hover {
 /* Add after existing keyframes */
 
 @keyframes love {
-    0%, 100% { transform: scale(1); filter: hue-rotate(0deg); }
-    25% { transform: scale(1.025); filter: hue-rotate(3deg); }
-    50% { transform: scale(1.05); filter: hue-rotate(6deg); }
-    75% { transform: scale(1.025); filter: hue-rotate(3deg); }
+    0%, 100% { 
+        font-variation-settings: 'wght' 200, 'wdth' 100;
+        transform: scale(1); 
+        filter: hue-rotate(0deg) brightness(1);
+        opacity: 1; 
+    }
+    30% { 
+        font-variation-settings: 'wght' 350, 'wdth' 110;
+        transform: scale(1.03); 
+        filter: hue-rotate(5deg) brightness(1.1);
+        opacity: 1; 
+    }
+    60% { 
+        font-variation-settings: 'wght' 400, 'wdth' 115;
+        transform: scale(1.05); 
+        filter: hue-rotate(8deg) brightness(1.15);
+        opacity: 1; 
+    }
+    80% { 
+        font-variation-settings: 'wght' 300, 'wdth' 105;
+        transform: scale(1.02); 
+        filter: hue-rotate(3deg) brightness(1.05);
+        opacity: 1; 
+    }
 }
 
 @keyframes flirty {
@@ -842,9 +862,13 @@ button:hover {
 
 .token-modal-header h2 {
     color: #333;
-    font-size: 28px;
-    font-weight: 600;
+    font-family: 'SF-Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 24px;
+    font-weight: 120;
+    font-variation-settings: 'wdth' 132;
     margin: 0;
+    mix-blend-mode: overlay;
+    user-select: none;
 }
 
 .token-modal-body p {
@@ -857,8 +881,8 @@ button:hover {
 .token-input {
     width: 100%;
     padding: 15px 20px;
-    border: 2px solid rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
     background: white;
     color: #333;
     font-size: 16px;
@@ -879,7 +903,7 @@ button:hover {
 
 .token-instructions {
     background: rgba(0, 0, 0, 0.05);
-    border-radius: 10px;
+    border-radius: 6px;
     padding: 15px;
     margin-bottom: 25px;
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -902,22 +926,49 @@ button:hover {
 }
 
 .token-submit-btn {
-    background: linear-gradient(135deg, #007AFF 0%, #005BBB 100%);
-    border: none;
-    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
     padding: 15px 40px;
-    color: white;
+    color: #333;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
     width: 100%;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
 }
 
 .token-submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Character spans for LOGIN text hover effect */
+.login-text .login-char {
+    display: inline-block;
+    transition: font-weight 0.1s ease-out;
+    font-weight: 300;
+}
+
+.login-text .login-space {
+    width: 4px;
+    display: inline-block;
+}
+
+/* Character spans for token title hover effect */
+.token-title .title-char {
+    display: inline-block;
+    transition: font-weight 0.1s ease-out;
+    font-weight: 120;
+}
+
+.token-title .title-space {
+    width: 10px;
+    display: inline-block;
 }
 
 .token-submit-btn:active {

@@ -469,16 +469,16 @@ Enjoy!
   <div id="tokenModal" class="token-modal">
     <div class="token-modal-content">
       <div class="token-modal-header">
-        <h2>🔑 API Token Required</h2>
+        <h2 class="token-title">API Token Required</h2>
       </div>
       <div class="token-modal-body">
-        <p>Please enter your Hugging Face API token to use emotion analysis:</p>
+        <p>Please enter your Hugging Face API token</p>
         <input type="password" id="tokenInput" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="token-input">
         <div class="token-instructions">
-          <p><strong>For students:</strong> Your instructor will provide this token privately.</p>
-          <p><strong>Need a token?</strong> <a href="https://huggingface.co/settings/tokens" target="_blank">Get one here</a></p>
+          <p><strong>Student?</strong> <a href="mailto:shalev46@gmail.com">message me</a> and i'll send you the token</p>
+          <p><strong>Create your own token with</strong> <a href="https://huggingface.co/settings/tokens" target="_blank">Hugging Face</a></p>
         </div>
-        <button id="tokenSubmit" class="token-submit-btn">Continue</button>
+        <button id="tokenSubmit" class="token-submit-btn"><span class="login-text">LOGIN</span></button>
         <div class="token-error" id="tokenError" style="display: none;"></div>
       </div>
     </div>
@@ -858,17 +858,17 @@ Enjoy!
         if(titleElement && !titleElement.dataset.prepared) {
           const titleText = titleElement.textContent.trim();
           titleElement.setAttribute('data-text', titleText);
-          const chars = titleText.split('');
+            const chars = titleText.split('');
           titleElement.innerHTML = chars.map(ch => {
-            if(ch === ' ') {
-              return '<span class="title-space">&nbsp;</span>';
-            }
-            return `<span class="title-char">${ch}</span>`;
-          }).join('');
+              if(ch === ' ') {
+                return '<span class="title-space">&nbsp;</span>';
+              }
+              return `<span class="title-char">${ch}</span>`;
+            }).join('');
           titleElement.dataset.prepared = 'true';
           titleElement.dataset.baseWeight = baseWeight;
           titleElement.dataset.maxWeight = maxWeight;
-        }
+          }
         
         // Initialize duplicate title
         if(duplicateElement && !duplicateElement.dataset.prepared) {
@@ -953,17 +953,17 @@ Enjoy!
       // Initialize both primary and duplicate titles
       if(editTitle) {
         initializeTitleHover(editTitle, editTitle2, 120, 600);
-        addTitleHoverEffect(editTitle, editTitle2);
+      addTitleHoverEffect(editTitle, editTitle2);
       }
       
       if(previewTitle) {
         initializeTitleHover(previewTitle, previewTitle2, 120, 600);
-        addTitleHoverEffect(previewTitle, previewTitle2);
+      addTitleHoverEffect(previewTitle, previewTitle2);
       }
       
       if(shareTitle) {
         initializeTitleHover(shareTitle, shareTitle2, 120, 600);
-        addTitleHoverEffect(shareTitle, shareTitle2);
+      addTitleHoverEffect(shareTitle, shareTitle2);
       }
 
       // === SAVE IMAGE BUTTON TEXT HOVER EFFECTS ===

@@ -1123,8 +1123,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
         
-        const response = await fetch(SENTIMENT_URL, {
-            method: "POST",
+            const response = await fetch(SENTIMENT_URL, {
+                method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
