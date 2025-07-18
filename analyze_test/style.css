@@ -492,9 +492,9 @@ body::before {
     margin-top: 0;
 }
 
-/* Arrow rotation */
+/* Arrow vertical flip */
 .card.minimized .arrow {
-    transform: rotate(180deg);
+    transform: scaleY(-1);
 }
 
 /* === Added for text_test integration === */
