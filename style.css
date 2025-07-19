@@ -1501,6 +1501,20 @@ body.art-generated .layout-image::before {
     display: inline-block;
 }
 
+/* Keyboard shortcut indicator styling */
+.keyboard-shortcut {
+    color: var(--input-tab-text-color);
+    font-size: 11px;
+    font-weight: 300;
+    font-family: 'Roboto Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    opacity: 0.4;
+    margin-top: -2px;
+    text-align: center;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: 0.5px;
+}
+
 
 
 /* Invisible rectangular hover area for Generate Card button */
